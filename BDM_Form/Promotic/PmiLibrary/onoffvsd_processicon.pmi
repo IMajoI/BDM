@@ -1,0 +1,686 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document Load="Auto">
+	<Cfg Name="Default">
+		<Content ver="80323">
+			<GItem Name="Canvas14" Type="PmiCanvas">
+				<Prop Name="EnabledInRt">1</Prop>
+				<Prop Name="EnabledInPanel">1</Prop>
+				<Prop Name="EnabledInWeb">1</Prop>
+				<Prop Name="EnabledInPrint">1</Prop>
+				<Prop Name="Attr0Dt">;24960</Prop>
+				<Prop Name="X">1100</Prop>
+				<Prop Name="Y">200</Prop>
+				<Prop Name="Dx">60</Prop>
+				<Prop Name="Dy">60</Prop>
+				<Props Name="Params">
+					<Prop Name="tagName" Type="par">vsd1</Prop>
+					<Prop Name="type" Type="par">3</Prop>
+				</Props>
+				<Prop Name="ToolTip">
+					<DStatic></DStatic>
+					<DBind Type="GP">
+						<Prop Name="Value">.;Vars("Description")</Prop>
+						<Prop Name="Reconnect">0</Prop>
+					</DBind>
+				</Prop>
+				<Props Name="LocalProps">
+					<Prop Name="blink" Type="bool">0</Prop>
+					<Prop Name="alUnackColor" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">/Z45AppCore/Colors/#vars/alUnackColor;Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="alActColor" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">/Z45AppCore/Colors/#vars/alActColor;Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="alNormalColor" Type="string">
+						<DStatic Type="string">black</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">/Z45AppCore/Colors/#vars/alNormalColor;Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="alInhColor" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">/Z45AppCore/Colors/#vars/alInhColor;Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="quality" Type="integer">
+						<DStatic Type="integer">0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/W1");Quality</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="AnyAl" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/AnyAl");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="AnyAck" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/AnyAck");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Cmd0Int" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Cmd0Int");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Cmd1IntCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Cmd1IntCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Cmd1IntCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Cmd1IntCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Auto" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Auto");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Seq" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Seq");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Cen" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Cen");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Loc" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Loc");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_OutOfSrv" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_OutOfSrv");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="RunCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/RunCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="RunCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/RunCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="RFSCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/RFSCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="RFSCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/RFSCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IB1BlockCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IB1BlockCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IB2BlockCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IB2BlockCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IB3BlockCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IB3BlockCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IB4BlockCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IB4BlockCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IABlockCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IABlockCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_PDBlockCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_PDBlockCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IB1BlockCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IB1BlockCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IB2BlockCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IB2BlockCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IB3BlockCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IB3BlockCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IB4BlockCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IB4BlockCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_IABlockCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_IABlockCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_PDBlockCCW" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_PDBlockCCW");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="ALAck" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/ALAck");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_PV" Type="double">
+						<DStatic Type="double">0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_PV");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_SV" Type="double">
+						<DStatic Type="double">0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/HMI_SV");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Description" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Description");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="type" Type="integer">5</Prop>
+					<Prop Name="Note" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/OnOffCtrlData_VSD/",$.par("tagName"),"/#vars/Note");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+				</Props>
+				<Prop Name="Enabled">1</Prop>
+				<Prop Name="Visible">1</Prop>
+				<Prop Name="DrawBg">1</Prop>
+				<Prop Name="FocusType">0</Prop>
+				<Prop Name="MenuType">0</Prop>
+				<Prop Name="UseParentVars">0</Prop>
+				<Event Name="onStart" Type="Pm">
+					<Script><![CDATA[pMe.Vars("type").Value = pMe.GetPar("type");]]></Script>
+				</Event>
+				<Event Name="onStop" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onRefresh" Type="Pm">
+					<Script><![CDATA[pMe.Vars("blink").Value = pMe.Vars("blink").Value === false ? true : false;
+
+//Note check
+pMe.GetChildByIndex(0).Visible = Pm.StringLen(pMe.Vars("Note").Value) > 0 ? true : false;]]></Script>
+				</Event>
+				<Event Name="onModeChange" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onFocusIn" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onFocusOut" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onKeyPress" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onMousePress" Type="Pm">
+					<Script><![CDATA[if(pEvent.Action === 0)
+{
+    var sPos = "pos:view," + (pMe.X+pMe.Dx) + "," + pMe.Y + ";";
+    pMe.PmPanel.OpenView("/Z45AppCore/Z45_Faceplates/_OnOffCtrlVSD_FP", "target:_blank;" + sPos, "par:tagName=" + pMe.GetPar("tagName") + ";");
+}
+
+]]></Script>
+				</Event>
+				<Event Name="onMenuSelect" Type="Pm">
+					<Script><![CDATA[var sPos = "pos:view," + (pMe.X+pMe.Dx) + "," + pMe.Y + ";";
+
+switch(pEvent.Name)
+{
+    case "AckAl":
+        pMe.Vars("ALAck").Value = false;
+        break;
+    case "Trend":
+        pMe.PmPanel.OpenView("/Z45AppCore/Z45_Faceplates/_OnOffCtrlVSDTrend_FP", "target:_blank;" + sPos, "par:tagName=" + pMe.GetPar("tagName") + ";");
+        break;
+    case "Events":
+        pMe.PmPanel.OpenView("/Z45AppCore/Events/#history", "target:_blank;" + sPos, "s.source:" + pMe.GetPar("tagName") + ";");
+        break;
+    case "Alarms":
+        pMe.PmPanel.OpenView("/Z45AppCore/Alarms/#state", "target:_blank;" + sPos, "s.source:" + pMe.GetPar("tagName") + ";");
+        break;
+}]]></Script>
+				</Event>
+				<Event Name="onMenuFill" Type="Pm">
+					<Script><![CDATA[pEvent.Menu.AddMenu("Alarms", "Alarmy");
+pEvent.Menu.AddMenu("Events", "Eventy");
+pEvent.Menu.AddMenu("Trend", "Trend");
+pEvent.Menu.AddMenu("AckAl", "Potvrdit Alarmy");]]></Script>
+				</Event>
+				<Methods/>
+				<GItem Name="Note" Type="PmiRasterImage">
+					<Prop Name="EnabledInRt">1</Prop>
+					<Prop Name="EnabledInPanel">1</Prop>
+					<Prop Name="EnabledInWeb">1</Prop>
+					<Prop Name="EnabledInPrint">1</Prop>
+					<Prop Name="Attr0Dt">;24960</Prop>
+					<Prop Name="X">0</Prop>
+					<Prop Name="Y">45</Prop>
+					<Prop Name="Dx">20</Prop>
+					<Prop Name="Dy">15</Prop>
+					<Props Name="Params"/>
+					<Prop Name="ToolTip"></Prop>
+					<Props Name="LocalProps"/>
+					<Prop Name="Enabled">1</Prop>
+					<Prop Name="Visible">1</Prop>
+					<Prop Name="DrawBg">0</Prop>
+					<Prop Name="FocusType">1</Prop>
+					<Prop Name="MenuType">0</Prop>
+					<Prop Name="File">#pmres:Img/IconAbout1.svg</Prop>
+					<Prop Name="TypeSize">0</Prop>
+					<Prop Name="TilesEnabled">0</Prop>
+					<Prop Name="CropEnabled">0</Prop>
+					<Prop Name="CropX">0</Prop>
+					<Prop Name="CropY">0</Prop>
+					<Prop Name="CropDx">100</Prop>
+					<Prop Name="CropDy">100</Prop>
+					<Prop Name="TranspColorEnabled">1</Prop>
+					<Prop Name="TranspColor">#ffffff</Prop>
+					<Prop Name="BgColorEnabled">0</Prop>
+					<Prop Name="LightColorEnabled">0</Prop>
+					<Prop Name="BlendEnabled">0</Prop>
+					<Prop Name="RotationType">0</Prop>
+					<Prop Name="ConstPagesRatio">0</Prop>
+					<Event Name="onStart" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onStop" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onRefresh" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onModeChange" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onFocusIn" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onFocusOut" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onKeyPress" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMousePress" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMenuSelect" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMenuFill" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Methods/>
+				</GItem>
+				<Methods Name="Canvas">
+					<Method Name="Alarm">
+						<Prop Name="Params">ctx,dx,dy,blink</Prop>
+						<Script><![CDATA[var alUnackColor = pEvent.GetVar("alUnackColor").Value;
+var alActColor = pEvent.GetVar("alActColor").Value;
+var alNormalColor = pEvent.GetVar("alNormalColor").Value;
+var alInhColor = pEvent.GetVar("alInhColor").Value;
+var Alarm = pEvent.GetVar("AnyAl").Value;
+var ALAck = pEvent.GetVar("AnyAck").Value;
+
+if(Alarm && ALAck)
+{
+    ctx.fillStyle = blink ? alActColor : alNormalColor;
+}
+else if(Alarm && !ALAck)
+{
+    ctx.fillStyle = alActColor;
+}
+else if(!Alarm && ALAck)
+{
+    ctx.fillStyle = blink ? alUnackColor : alNormalColor;
+}
+else
+{
+    ctx.fillStyle = alNormalColor;
+}
+
+ctx.fillRect(0, 0, dx, dy);
+]]></Script>
+					</Method>
+					<Method Name="Background">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var borderLineX = dx * 0.05;
+var borderLineY = dy * 0.05;
+
+ctx.fillStyle = "#c0c0c0";
+ctx.fillRect(borderLineX, borderLineY, dx - 2 * borderLineX, dy - 2 * borderLineY);]]></Script>
+					</Method>
+					<Method Name="Fan">
+						<Prop Name="Params">ctx,dx,dy,Run,travel,blink</Prop>
+						<Script><![CDATA[var x = dx * 0.2;
+var y = dy * 0.2;
+var circleR = (dx - 2 * x) / 2;
+var lineW = x * 0.2;
+var runColor = "";
+
+if(travel)
+{
+    runColor = travel && blink ? "#00cc00" : "#00ac00";
+}
+else
+{
+    runColor = Run ? "#00ac00" : "white";
+}
+
+//circle
+ctx.beginPath();
+ctx.lineWidth = lineW;
+ctx.arc(dx / 2, dy / 2, circleR, 0, 2 * Pm.PI);
+ctx.stroke();
+ctx.fill();
+ctx.closePath();
+
+
+//lines
+ctx.lineWidth = x * 0.2;
+ctx.fillStyle = runColor;
+ctx.strokeStyle = "black";
+
+ctx.beginPath();
+ctx.moveTo(dx * 0.79, dy * 0.55);
+ctx.lineTo(dx * 0.29, dy * 0.71);
+
+ctx.arc(dx / 2, dy / 2, circleR, Pm.PI * 0.8, Pm.PI * 1.2); 
+
+ctx.lineTo(dx * 0.29, dy * 0.29);
+ctx.lineTo(dx * 0.79, dy * 0.45);
+ctx.closePath();
+
+ctx.stroke();
+ctx.fill();
+
+]]></Script>
+					</Method>
+					<Method Name="Interlock">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var fFontSize = Pm.Round(dy * 0.4, 1);
+var borderLineX = dx * 0.03;
+var borderLineY = dy * 0.03;
+var interlock = pEvent.GetVar("RFSCW").Value && pEvent.GetVar("RFSCCW").Value;
+var interlockBlocked = pEvent.GetVar("HMI_IB1BlockCW").Value || pEvent.GetVar("HMI_IB2BlockCW").Value || pEvent.GetVar("HMI_IB3BlockCW").Value || pEvent.GetVar("HMI_IB4BlockCW").Value || pEvent.GetVar("HMI_PDBlockCW").Value || pEvent.GetVar("HMI_IABlockCW").Value ||
+                       pEvent.GetVar("HMI_IB1BlockCCW").Value || pEvent.GetVar("HMI_IB2BlockCCW").Value || pEvent.GetVar("HMI_IB3BlockCCW").Value || pEvent.GetVar("HMI_IB4BlockCCW").Value || pEvent.GetVar("HMI_PDBlockCCW").Value || pEvent.GetVar("HMI_IABlockCCW").Value;
+
+ctx.fillStyle = "black";
+ctx.font = "bold " + fFontSize + "px arial";
+ctx.textAlign = "center";
+
+if(!interlock)
+{
+    ctx.fillText("x", dx * 0.8, fFontSize);
+}
+else if(interlockBlocked)
+{
+    ctx.fillText("B", dx * 0.8, fFontSize);
+}]]></Script>
+					</Method>
+					<Method Name="Mode">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var borderLine = dy * 0.1;
+var Mode = "L";
+
+if(pEvent.GetVar("Loc").Value)
+{
+    Mode = "L";
+}
+else if(pEvent.GetVar("Cen").Value)
+{
+    Mode = pEvent.GetVar("Auto").Value || pEvent.GetVar("Seq").Value ? "A" : "M";
+}
+
+var fFontSize = Pm.Round(dy * 0.25, 1);
+
+if(Mode)
+{
+    ctx.strokeStyle = "gray";
+    ctx.fillStyle = "gray";
+    ctx.font = "bold " + fFontSize + "px arial";
+    ctx.textAlign = "center";
+    ctx.fillText(Mode, dx * 0.8, dy - fFontSize * 0.3);
+}]]></Script>
+					</Method>
+					<Method Name="Motor">
+						<Prop Name="Params">ctx,dx,dy,Run,travel,blink</Prop>
+						<Script><![CDATA[var x = dx * 0.2;
+var y = dy * 0.2;
+var circleR = (dx - 2 * x) / 2;
+var lineW = x * 0.2;
+var vFontSize = Pm.Round(circleR * 1.5, 1);
+var runColor = "";
+
+if(travel)
+{
+    runColor = travel && blink ? "#00cc00" : "#00ac00";
+}
+else
+{
+    runColor = Run ? "#00ac00" : "white";
+}
+
+//circle
+ctx.beginPath();
+ctx.fillStyle = runColor;
+ctx.lineWidth = lineW;
+ctx.arc(dx / 2, dy / 2, circleR, 0, 2 * Pm.PI);
+ctx.stroke();
+ctx.fill();
+ctx.closePath();
+
+
+//M
+ctx.beginPath();
+ctx.fillStyle = "black";
+ctx.font = vFontSize + "px arial";
+ctx.textAlign = "center";
+ctx.fillText("M", dx / 2, dy / 2 + vFontSize * 0.4);
+ctx.closePath();
+
+]]></Script>
+					</Method>
+					<Method Name="Pump">
+						<Prop Name="Params">ctx,dx,dy,Run,travel,blink</Prop>
+						<Script><![CDATA[var x = dx * 0.2;
+var y = dy * 0.2;
+var circleR = (dx - 2 * x) / 2;
+var lineW = x * 0.2;
+var runColor = "";
+
+if(travel)
+{
+    runColor = travel && blink ? "#00cc00" : "#00ac00";
+}
+else
+{
+    runColor = Run ? "#00ac00" : "white";
+}
+
+//circle
+ctx.beginPath();
+ctx.lineWidth = lineW;
+ctx.arc(dx / 2, dy / 2, circleR, 0, 2 * Pm.PI);
+ctx.stroke();
+ctx.fill();
+ctx.closePath();
+
+
+//lines
+ctx.lineWidth = x * 0.2;
+ctx.fillStyle = runColor;
+ctx.strokeStyle = "black";
+
+ctx.beginPath();
+ctx.moveTo(dx * 0.8, dy * 0.5);
+ctx.lineTo(dx * 0.29, dy * 0.71);
+
+ctx.arc(dx / 2, dy / 2, circleR, Pm.PI * 0.8, Pm.PI * 1.2); 
+
+ctx.lineTo(dx * 0.29, dy * 0.29);
+ctx.lineTo(dx * 0.8, dy * 0.5);
+//ctx.closePath();
+
+ctx.stroke();
+ctx.fill();
+
+]]></Script>
+					</Method>
+					<Method Name="Quality">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var quality = pEvent.GetVar("quality").Value;
+var qBorderSize = dy * 0.05;
+
+if(quality !== 192 || pEvent.GetVar("HMI_OutOfSrv").Value)
+{
+    ctx.beginPath();
+    ctx.lineWidth = qBorderSize;
+    ctx.strokeStyle = "red";
+    ctx.moveTo(0, 0);
+    ctx.lineTo(dx, dy);
+    ctx.moveTo(dx, 0);
+    ctx.lineTo(0, dy);
+    ctx.stroke();
+    ctx.closePath();
+}]]></Script>
+					</Method>
+					<Method Name="onDraw">
+						<Prop Name="Params"></Prop>
+						<Script><![CDATA[//init
+var blink = pEvent.GetVar("blink").Value;
+var ctx = pEvent.GetCtx(0);
+var dx = pEvent.CtxDx;
+var dy = pEvent.CtxDy;
+
+var HMI_PV = pEvent.GetVar("HMI_PV").Value;
+var HMI_SV = pEvent.GetVar("HMI_SV").Value;
+var Run = pEvent.GetVar("RunCW").Value || pEvent.GetVar("RunCCW").Value;
+var travel = Run && !(HMI_PV == HMI_SV) ? true : false;
+var type = pEvent.GetVar("type").Value;
+
+
+pEvent.Methods.Alarm(ctx, dx, dy, blink);
+pEvent.Methods.Background(ctx, dx, dy);
+
+switch(type)
+{
+    case 3:
+        pEvent.Methods.Pump(ctx, dx, dy, Run, travel, blink);
+        break;
+    case 5:
+        pEvent.Methods.Motor(ctx, dx, dy, Run, travel, blink);
+        break;
+    case 6:
+        pEvent.Methods.Fan(ctx, dx, dy, Run, travel, blink);
+        break;
+}
+
+
+pEvent.Methods.Mode(ctx, dx, dy);
+pEvent.Methods.Interlock(ctx, dx, dy);
+pEvent.Methods.Quality(ctx, dx, dy);
+]]></Script>
+					</Method>
+				</Methods>
+			</GItem>
+		</Content>
+	</Cfg>
+</Document>

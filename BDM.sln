@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDM", "BDM\BDM.csproj", "{E3DE8A3F-E69B-4179-AB5E-351C47BCB4DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDMdata", "BDMdata\BDMdata.csproj", "{AC9E8B4E-FC60-45B0-BFB9-7193AE0B3224}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDM_Form", "BDM_Form\BDM_Form.csproj", "{AF4207F7-AC65-4C6D-B809-3694EED793E1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E3DE8A3F-E69B-4179-AB5E-351C47BCB4DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3DE8A3F-E69B-4179-AB5E-351C47BCB4DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3DE8A3F-E69B-4179-AB5E-351C47BCB4DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3DE8A3F-E69B-4179-AB5E-351C47BCB4DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC9E8B4E-FC60-45B0-BFB9-7193AE0B3224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC9E8B4E-FC60-45B0-BFB9-7193AE0B3224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC9E8B4E-FC60-45B0-BFB9-7193AE0B3224}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC9E8B4E-FC60-45B0-BFB9-7193AE0B3224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF4207F7-AC65-4C6D-B809-3694EED793E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF4207F7-AC65-4C6D-B809-3694EED793E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF4207F7-AC65-4C6D-B809-3694EED793E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF4207F7-AC65-4C6D-B809-3694EED793E1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 4
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://inh-dev-z12vt01:8045/tfs/z45p_process%20automation
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = BDM\\BDM.csproj
+		SccProjectName1 = BDM
+		SccLocalPath1 = BDM
+		SccProjectUniqueName2 = BDMdata\\BDMdata.csproj
+		SccProjectName2 = BDMdata
+		SccLocalPath2 = BDMdata
+		SccProjectUniqueName3 = BDM_Form\\BDM_Form.csproj
+		SccProjectName3 = BDM_Form
+		SccLocalPath3 = BDM_Form
+	EndGlobalSection
+EndGlobal

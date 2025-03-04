@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<Root>
+  
+<AlarmTimer><![CDATA[
+'EXAMPLE
+'dim alarm, alack
+
+'alarm = pMe.Pm("/Z45AppCore/AnalogPosCtrlData/analog1/#vars/AnyAl")
+'alack = pMe.Pm("/Z45AppCore/AnalogPosCtrlData/analog1/#vars/AnyAck") or pMe.Pm("/Z45AppCore/DinData/DIN/#vars/ALAck")
+
+'AlarmStripes.Methods.SetAlarm "Menu", 1, alarm, alack
+]]></AlarmTimer>
+  
+<AlarmStripesMethod><![CDATA[
+dim str
+dim arr
+dim i
+
+str = pMe.Item(Group).Value
+
+arr = Pm.StringSplit (str, ";", "empty:1;")
+
+if Alarm and ALack then
+    arr(Display-1) = "2"
+elseif Alarm and not ALack then
+    arr(Display-1) = "1"
+elseif not Alarm and ALack then
+    arr(Display-1) = "3"
+else
+    arr(Display-1) = "0"
+end if
+
+str = ""
+
+for i = 0 to ubound(arr)
+str = str & arr(i) & ";"
+next 
+
+pMe.Item(Group).Value = str
+]]></AlarmStripesMethod>
+
+<TrendConnection><![CDATA[$.join("Data Source=",$.path("data","Trend/"),$.expr("pMe.GroupId"),"/;")]]></TrendConnection>
+
+</Root>
+
+
+

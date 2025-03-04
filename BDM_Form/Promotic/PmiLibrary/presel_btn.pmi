@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document Load="Auto">
+	<Cfg Name="Default">
+		<Content ver="80323">
+			<GItem Name="Canvas18" Type="PmiCanvas">
+				<Prop Name="EnabledInRt">1</Prop>
+				<Prop Name="EnabledInPanel">1</Prop>
+				<Prop Name="EnabledInWeb">1</Prop>
+				<Prop Name="EnabledInPrint">1</Prop>
+				<Prop Name="Attr0Dt">;24960</Prop>
+				<Prop Name="X">780</Prop>
+				<Prop Name="Y">860</Prop>
+				<Prop Name="Dx">140</Prop>
+				<Prop Name="Dy">50</Prop>
+				<Props Name="Params">
+					<Prop Name="tagName" Type="par">presel</Prop>
+					<Prop Name="locDescription" Type="par">presel A</Prop>
+				</Props>
+				<Prop Name="ToolTip">
+					<DStatic></DStatic>
+					<DBind Type="GP">
+						<Prop Name="Value">.;Vars("Description")</Prop>
+						<Prop Name="Reconnect">0</Prop>
+					</DBind>
+				</Prop>
+				<Props Name="LocalProps">
+					<Prop Name="blink" Type="bool">0</Prop>
+					<Prop Name="quality" Type="integer">
+						<DStatic Type="integer">0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/PreselData/",$.par("tagName"),"/#vars/W1");Quality</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Description" Type="string">
+						<DStatic Type="string">test</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/PreselData/",$.par("tagName"),"/#vars/Description");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="locDescription" Type="string"></Prop>
+					<Prop Name="Presel" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/PreselData/",$.par("tagName"),"/#vars/Presel");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="PreValid" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/PreselData/",$.par("tagName"),"/#vars/PreValid");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HMI_PreselEn" Type="bool">
+						<DStatic>1</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/PreselData/",$.par("tagName"),"/#vars/HMI_PreselEn");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Note" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/PreselData/",$.par("tagName"),"/#vars/Note");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+				</Props>
+				<Prop Name="Enabled">
+					<DStatic>1</DStatic>
+					<DBind Type="GP">
+						<Prop Name="Value">.;Vars("HMI_PreselEn")</Prop>
+						<Prop Name="Reconnect">0</Prop>
+					</DBind>
+				</Prop>
+				<Prop Name="Visible">1</Prop>
+				<Prop Name="DrawBg">1</Prop>
+				<Prop Name="FocusType">0</Prop>
+				<Prop Name="MenuType">0</Prop>
+				<Prop Name="UseParentVars">0</Prop>
+				<Event Name="onStart" Type="Pm">
+					<Script><![CDATA[pMe.Vars("locDescription").Value = pMe.GetPar("locDescription");]]></Script>
+				</Event>
+				<Event Name="onStop" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onRefresh" Type="Pm">
+					<Script><![CDATA[pMe.Vars("blink").Value = pMe.Vars("blink").Value === false ? true : false;
+
+//Note check
+pMe.GetChildByIndex(0).Visible = Pm.StringLen(pMe.Vars("Note").Value) > 0 ? true : false;]]></Script>
+				</Event>
+				<Event Name="onModeChange" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onFocusIn" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onFocusOut" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onKeyPress" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onMousePress" Type="Pm">
+					<Script><![CDATA[if(pEvent.Action === 0)
+{
+    pMe.Vars("Presel").Value = pMe.Vars("Presel").Value ? false : true;
+}]]></Script>
+				</Event>
+				<Event Name="onMenuSelect" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onMenuFill" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Methods/>
+				<GItem Name="Note" Type="PmiRasterImage">
+					<Prop Name="EnabledInRt">1</Prop>
+					<Prop Name="EnabledInPanel">1</Prop>
+					<Prop Name="EnabledInWeb">1</Prop>
+					<Prop Name="EnabledInPrint">1</Prop>
+					<Prop Name="Attr0Dt">;24960</Prop>
+					<Prop Name="X">0</Prop>
+					<Prop Name="Y">35</Prop>
+					<Prop Name="Dx">20</Prop>
+					<Prop Name="Dy">15</Prop>
+					<Props Name="Params"/>
+					<Prop Name="ToolTip"></Prop>
+					<Props Name="LocalProps"/>
+					<Prop Name="Enabled">1</Prop>
+					<Prop Name="Visible">1</Prop>
+					<Prop Name="DrawBg">0</Prop>
+					<Prop Name="FocusType">1</Prop>
+					<Prop Name="MenuType">0</Prop>
+					<Prop Name="File">#pmres:Img/IconAbout1.svg</Prop>
+					<Prop Name="TypeSize">0</Prop>
+					<Prop Name="TilesEnabled">0</Prop>
+					<Prop Name="CropEnabled">0</Prop>
+					<Prop Name="CropX">0</Prop>
+					<Prop Name="CropY">0</Prop>
+					<Prop Name="CropDx">100</Prop>
+					<Prop Name="CropDy">100</Prop>
+					<Prop Name="TranspColorEnabled">1</Prop>
+					<Prop Name="TranspColor">#ffffff</Prop>
+					<Prop Name="BgColorEnabled">0</Prop>
+					<Prop Name="LightColorEnabled">0</Prop>
+					<Prop Name="BlendEnabled">0</Prop>
+					<Prop Name="RotationType">0</Prop>
+					<Prop Name="ConstPagesRatio">0</Prop>
+					<Event Name="onStart" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onStop" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onRefresh" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onModeChange" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onFocusIn" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onFocusOut" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onKeyPress" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMousePress" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMenuSelect" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMenuFill" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Methods/>
+				</GItem>
+				<Methods Name="Canvas">
+					<Method Name="Background">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var grd = ctx.createLinearGradient(dx * 0.5, 0, dx * 0.5, dy);
+grd.addColorStop(0, "#c0c0c0");
+grd.addColorStop(1, "#a8a8a8");
+
+var borderLine = dy * 0.15;
+
+ctx.beginPath();
+ctx.lineWidth = 1;
+ctx.strokeStyle = grd;
+ctx.fillStyle = grd;
+ctx.rect(borderLine, borderLine, dx - 2 * borderLine, dy - 2 * borderLine);
+ctx.fill();
+ctx.stroke();
+ctx.closePath();]]></Script>
+					</Method>
+					<Method Name="Border">
+						<Prop Name="Params">ctx,dx,dy,blink</Prop>
+						<Script><![CDATA[var borderLine = dy * 0.075;
+var Presel = pEvent.GetVar("Presel").Value;
+var PreValid = pEvent.GetVar("PreValid").Value;
+var borderColor = "";
+
+if(!Presel && !PreValid)
+{
+    borderColor = "white";
+}
+else if(!Presel && PreValid)
+{
+    borderColor = blink ? "#a8a8a8" : "white";
+}
+else if(Presel && !PreValid)
+{
+    borderColor = blink ? "#3068ff" : "white";
+}
+else if(Presel && PreValid)
+{
+    borderColor = "#3068ff";
+}
+
+ctx.fillStyle = borderColor;
+ctx.fillRect(0, 0, dx, dy);
+
+ctx.beginPath();
+ctx.lineWidth = 1;
+ctx.fillStyle = Presel ? "#686868" : "white";
+ctx.strokeStyle = "#686868";
+ctx.rect(borderLine, borderLine, dx - 2 * borderLine, dy - 2 * borderLine);
+ctx.fill();
+ctx.stroke();
+ctx.closePath();
+
+ctx.beginPath();
+ctx.lineWidth = 1;
+ctx.fillStyle = Presel ? "white" : "#686868";
+ctx.strokeStyle = "#686868";
+ctx.rect(2 * borderLine, 2 * borderLine, dx - 3 * borderLine, dy - 3 * borderLine);
+ctx.fill();
+ctx.stroke();
+ctx.closePath();
+
+ctx.strokeStyle = Presel ? "white" : "#686868";
+
+ctx.beginPath();
+ctx.moveTo(borderLine, dy - borderLine);
+ctx.lineTo(2 * borderLine, dy - 2 * borderLine);
+ctx.lineTo(2 * borderLine, dy - borderLine);
+ctx.closePath();
+ctx.fill();
+ctx.stroke();
+
+ctx.beginPath();
+ctx.moveTo(dx - borderLine, borderLine);
+ctx.lineTo(dx - 2 * borderLine, 2 * borderLine);
+ctx.lineTo(dx - borderLine, 2 * borderLine);
+ctx.closePath();
+ctx.fill();
+ctx.stroke();
+]]></Script>
+					</Method>
+					<Method Name="Description">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var desc = Pm.StringLen(pEvent.GetVar("locDescription").Value) > 0 ? pEvent.GetVar("locDescription").Value : pEvent.GetVar("Description").Value;
+var vFontSize = Pm.Round(dy * 0.5, 1);
+var Enable = pEvent.GetVar("HMI_PreselEn").Value;
+
+ctx.beginPath();
+ctx.fillStyle = Enable ? "black" : "#808080";
+ctx.font = vFontSize + "px arial";
+ctx.textAlign = "center";
+ctx.fillText(desc, dx * 0.5, vFontSize * 1.3);
+ctx.closePath();]]></Script>
+					</Method>
+					<Method Name="Mode">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var ManualMode = pEvent.GetVar("ManualMode").Value;
+var fFontSize = Pm.Round(dy * 0.5, 1);
+var borderLine = dy * 0.1;
+
+if(ManualMode)
+{
+    ctx.strokeStyle = "gray";
+    ctx.fillStyle = "gray";
+    ctx.font = "bold " + fFontSize + "px arial";
+    ctx.textAlign = "center";
+    ctx.fillText("M", dx * 0.95, dy - borderLine);
+}]]></Script>
+					</Method>
+					<Method Name="Quality">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var quality = pEvent.GetVar("quality").Value;
+var qBorderSize = dy * 0.05;
+
+if(quality !== 192)
+{
+    ctx.beginPath();
+    ctx.lineWidth = qBorderSize;
+    ctx.strokeStyle = "red";
+    ctx.moveTo(0, 0);
+    ctx.lineTo(dx, dy);
+    ctx.moveTo(dx, 0);
+    ctx.lineTo(0, dy);
+    ctx.stroke();
+    ctx.closePath();
+}]]></Script>
+					</Method>
+					<Method Name="onDraw">
+						<Prop Name="Params"></Prop>
+						<Script><![CDATA[//init
+var blink = pEvent.GetVar("blink").Value;
+var ctx = pEvent.GetCtx(0);
+var dx = pEvent.CtxDx;
+var dy = pEvent.CtxDy;
+
+pEvent.Methods.Border(ctx, dx, dy, blink);
+pEvent.Methods.Background(ctx, dx, dy);
+pEvent.Methods.Description(ctx, dx, dy);
+//pEvent.Methods.Quality(ctx, dx, dy);]]></Script>
+					</Method>
+				</Methods>
+			</GItem>
+		</Content>
+	</Cfg>
+</Document>

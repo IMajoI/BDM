@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<Root>
+  
+<Ain_AlarmsMethod>
+<![CDATA[
+if pMe.Item(tagname & "_AlarmHH").Acknowledged then
+pMe.Pm("../AinData/" & tagname & "/#vars/HH_ALAck").Value = false
+end if
+
+if pMe.Item(tagname & "_AlarmH").Acknowledged then
+pMe.Pm("../AinData/" & tagname & "/#vars/H_ALAck").Value = false
+end if
+if pMe.Item(tagname & "_AlarmL").Acknowledged then
+pMe.Pm("../AinData/" & tagname & "/#vars/L_ALAck").Value = false
+end if
+
+if pMe.Item(tagname & "_AlarmLL").Acknowledged then
+pMe.Pm("../AinData/" & tagname & "/#vars/LL_ALAck").Value = false
+end if
+
+if pMe.Item(tagname & "_HWSigFault").Acknowledged then
+pMe.Pm("../AinData/" & tagname & "/#vars/HWSigFault_ALAck").Value = false
+end if
+]]>
+</Ain_AlarmsMethod>
+
+<AnalogPos_AlarmsMethod>
+<![CDATA[
+if pMe.Item(tagname & "_FBFault").Acknowledged then
+pMe.Pm("../AnalogPosCtrlData/" & tagname & "/#vars/FBFault_ALAck").Value = false
+end if
+
+if pMe.Item(tagname & "_PosError").Acknowledged then
+pMe.Pm("../AnalogPosCtrlData/" & tagname & "/#vars/PosError_ALAck").Value = false
+end if
+
+if pMe.Item(tagname & "_HWSigFault_FB").Acknowledged then
+pMe.Pm("../AnalogPosCtrlData/" & tagname & "/#vars/HWSigFault_FB_ALAck").Value = false
+end if
+]]>
+</AnalogPos_AlarmsMethod>
+
+<Aout_AlarmsMethod>
+<![CDATA[
+if pMe.Item(tagname & "_HWSigFault").Acknowledged then
+pMe.Pm("../AoutData/" & tagname & "/#vars/HWSigFault_ALAck").Value = false
+end if
+]]>
+</Aout_AlarmsMethod>
+
+<Din_AlarmsMethod>
+<![CDATA[
+if pMe.Item(tagname & "_Alarm").Acknowledged then
+pMe.Pm("../DinData/" & tagname & "/#vars/ALAck").Value = false
+end if
+]]>
+</Din_AlarmsMethod>
+
+<OnOffCtrl_AlarmsMethod>
+<![CDATA[
+if pMe.Item(tagname & "_FBFault").Acknowledged then
+pMe.Pm("../OnOffCtrlData/" & tagname & "/#vars/ALAck").Value = false
+end if
+]]>
+</OnOffCtrl_AlarmsMethod>
+
+<OnOffCtrl2D_AlarmsMethod>
+<![CDATA[
+if pMe.Item(tagname & "_FBFaultCW").Acknowledged and pMe.Item(tagname & "_FBFaultCCW").Acknowledged and pMe.Item(tagname & "_FBFaultStop").Acknowledged then
+pMe.Pm("../OnOffCtrlData_2D/" & tagname & "/#vars/ALAck").Value = false
+end if
+]]>
+</OnOffCtrl2D_AlarmsMethod>
+
+<OnOffCtrlVSD_AlarmsMethod>
+<![CDATA[
+if pMe.Item(tagname & "_FBFaultCW").Acknowledged and pMe.Item(tagname & "_FBFaultCCW").Acknowledged and pMe.Item(tagname & "_DriveFault").Acknowledged then
+pMe.Pm("../OnOffCtrlData_VSD/" & tagname & "/#vars/ALAck").Value = false
+end if
+]]>
+</OnOffCtrlVSD_AlarmsMethod>
+
+</Root>
+
+
+

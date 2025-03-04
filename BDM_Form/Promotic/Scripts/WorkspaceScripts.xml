@@ -1,0 +1,358 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Root>
+
+  <MenuOnStartEvent>
+    <![CDATA[
+//Initialization
+var ctr = 0;
+pMe.Vars("titles").Value = "";
+pMe.Vars("pathes").Value = "";
+
+var aAlphabet = Pm.StringSplit(pMe.Vars("Alphabet").Value, ";","empty:1;");
+
+//get pathes of main panels and sub panels
+var aPathes = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:path;");
+
+for(var a = 0; a < aAlphabet.GetSize(1); a++)
+{
+    for(var i = 0; i < aPathes.GetSize(2); i++)
+    {
+        if(Pm.StringFind(aPathes.GetItem(0,i), "Z45_Panels/" + aAlphabet.GetItem(a) + "0", 0) > 0)
+        {
+            pMe.Vars("titles").Value = pMe.Vars("titles").Value + Pm.StringSub(aPathes.GetItem(0,i), 12) + ";";
+            pMe.Vars("pathes").Value = pMe.Vars("pathes").Value + aPathes.GetItem(0,i) + ";";
+            pMe.Vars("Stripes").Value = pMe.Vars("Stripes").Value + "0;";
+            ctr++;
+        }
+    }
+}
+
+pMe.Vars("titlesWidth").Value = ctr > 6 ? (pMe.Dx / ctr) : (pMe.Dx / 6);
+
+//init substripes
+var aSubTitles = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:title;");
+
+for(var i = 0; i < aAlphabet.GetSize(1); i++)
+{
+    for(var j = 0; j < aSubTitles.GetSize(2); j++)
+    {
+        if(Pm.StringSub(aSubTitles.GetItem(0,j), 0, 1) === aAlphabet.GetItem(i) && Pm.StringSub(aSubTitles.GetItem(0,j), 1, 2) !== "0" && aSubTitles.GetItem(0,j) !== "Název")
+        {
+            pMe.Vars(aAlphabet.GetItem(i) + "Stripes").Value = pMe.Vars(aAlphabet.GetItem(i) + "Stripes").Value + "0;";
+        }
+    }
+}
+
+
+
+
+
+//set default page open on start
+
+var aPathes = Pm.StringSplit(pMe.Vars("pathes").Value, ";","empty:1;");
+var aTitles = Pm.StringSplit(pMe.Vars("titles").Value, ";","empty:1;");
+
+//Open panel
+pMe.PmPanel.OpenView(aPathes.GetItem(pMe.GetPar("DefaultPanel")), "target:main");
+var title = aTitles.GetItem(0);
+
+//Set pointer to selected panel
+pMe.Vars("selMain").Value = pMe.GetPar("DefaultPanel");
+pMe.Vars("selSub").Value = 1000;
+
+//get subpathes and subtitles
+var ctr = 0;
+var aSubPathes = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:path;");
+
+for(var a = 1; a < 16; a++)
+{
+    for(var i = 0; i < aSubPathes.GetSize(2); i++)
+    {
+        if(Pm.StringFind(aSubPathes.GetItem(0,i), "Z45_Panels/" + Pm.StringSub(title, 0, 1) + a, 0) > 0)
+        {
+            pMe.Vars("subTitles").Value = pMe.Vars("subTitles").Value + Pm.StringSub(aSubPathes.GetItem(0,i), 12) + ";";
+            pMe.Vars("subPathes").Value = pMe.Vars("subPathes").Value + aSubPathes.GetItem(0,i) + ";";
+            ctr++;
+        }
+    }
+}
+
+pMe.Vars("subTitlesWidth").Value = ctr > 6 ? pMe.Dx / ctr : pMe.Dx / 6;
+]]>
+</MenuOnStartEvent>
+  
+<MenuOnRefreshEvent>
+<![CDATA[
+//generate blink on refresh event
+pMe.Vars("blink").Value = !pMe.Vars("blink").Value;
+]]>
+</MenuOnRefreshEvent>
+
+<MenuOnMousePressEvent>
+<![CDATA[
+//left click release on main menu
+if (pEvent.Action === 0 && pEvent.Y < pMe.Dy/2)
+{
+
+    //Init
+    pMe.Vars("subTitles").Value = "";
+    pMe.Vars("subPathes").Value = "";
+    
+    var width = pMe.Vars("titlesWidth").Value;
+    var sum1 = 0;
+    var elementMain = 0;
+    
+    do
+    {
+        sum1 = sum1 + width;
+        elementMain++;
+    }while(sum1 < pEvent.X)
+    
+    var aPathes = Pm.StringSplit(pMe.Vars("pathes").Value, ";","empty:1;");
+    var aTitles = Pm.StringSplit(pMe.Vars("titles").Value, ";","empty:1;");
+    
+    //Open panel
+    pMe.PmPanel.OpenView(aPathes.GetItem(elementMain-1), "target:main");
+    var title = aTitles.GetItem(elementMain-1);
+    
+    //Set pointer to selected panel
+    pMe.Vars("selMain").Value = elementMain - 1;
+    pMe.Vars("selSub").Value = 1000;
+    
+    //get subpathes and subtitles
+    var ctr = 0;
+    var aSubPathes = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:path;");
+    
+    for(var a = 1; a < 16; a++)
+    {
+        for(var i = 0; i < aSubPathes.GetSize(2); i++)
+        {
+            if(Pm.StringFind(aSubPathes.GetItem(0,i), "Z45_Panels/" + Pm.StringSub(title, 0, 1) + a, 0) > 0)
+            {
+                pMe.Vars("subTitles").Value = pMe.Vars("subTitles").Value + Pm.StringSub(aSubPathes.GetItem(0,i), 12) + ";";
+                pMe.Vars("subPathes").Value = pMe.Vars("subPathes").Value + aSubPathes.GetItem(0,i) + ";";
+                ctr++;
+            }
+        }
+    }
+    
+    pMe.Vars("subTitlesWidth").Value = ctr > 6 ? pMe.Dx / ctr : pMe.Dx / 6;
+}
+
+//left click release on sub menu
+if (pEvent.Action === 0 && pEvent.Y > pMe.Dy/2)
+{
+    var aSubPathes = Pm.StringSplit(pMe.Vars("subPathes").Value, ";","empty:1;");
+    var subWidth = pMe.Vars("subTitlesWidth").Value;
+    var sum2 = 0;
+    var elementSub = 0;
+    
+    do
+    {
+        sum2 = sum2 + subWidth;
+        elementSub++;
+    }while(sum2 < pEvent.X)
+    
+    pMe.PmPanel.OpenView(aSubPathes.GetItem(elementSub-1), "target:main");
+    
+    //Set pointer to selected panel
+    pMe.Vars("selSub").Value = elementSub - 1;
+}
+]]>
+</MenuOnMousePressEvent>
+  
+<MenuOnDrawMethod>
+<![CDATA[
+//local
+var dx  = pEvent.CtxDx;
+var dy  = pEvent.CtxDy;
+var ctx = pEvent.GetCtx(0);
+var alUnackColor = "#ff6868";
+var alActColor = "red";
+var alNormalColor = "transparent";
+var selectedColor = "#808080";
+
+//Vars
+var aAlphabet = Pm.StringSplit(pEvent.GetVar("Alphabet").Value, ";","empty:1;");
+var aTitles = Pm.StringSplit(pEvent.GetVar("titles").Value, ";","empty:1;");
+var aSubTitles = Pm.StringSplit(pEvent.GetVar("subTitles").Value, ";","empty:1;");
+
+var titleElements = aTitles.GetSize(1) > 6 ? aTitles.GetSize(1) : 6;
+var subTitleElements = aSubTitles.GetSize(1) > 6 ? aSubTitles.GetSize(1) : 6;
+
+//get alarm stripes
+var mStripes = Pm.StringSplit(pEvent.GetVar("Stripes").Value, ";","empty:1;");
+
+if(pEvent.GetVar("selMain").Value < aAlphabet.GetSize(1) + 1)
+{
+    var subStripes = Pm.StringSplit(pEvent.GetVar(aAlphabet.GetItem(pEvent.GetVar("selMain").Value) + "Stripes").Value, ";","empty:1;");
+}
+
+ctx.lineWidth = 2;
+
+//titles rect
+for(var i = 0; i < aTitles.GetSize(1); i++)
+{
+    if(mStripes.GetItem(i) === "2" || Pm.StringFind(pEvent.GetVar(aAlphabet.GetItem(i) + "Stripes").Value, "2", 0) >= 0)
+    {
+        ctx.fillStyle = pEvent.GetVar("blink").Value ? alActColor : alNormalColor;
+    }
+    else if(mStripes.GetItem(i) === "1" || Pm.StringFind(pEvent.GetVar(aAlphabet.GetItem(i) + "Stripes").Value, "1", 0) >= 0)
+    {
+        ctx.fillStyle = alActColor;
+    }
+    else if (mStripes.GetItem(i) === "3" || Pm.StringFind(pEvent.GetVar(aAlphabet.GetItem(i) + "Stripes").Value, "3", 0) >= 0)
+    {
+        ctx.fillStyle = pEvent.GetVar("blink").Value ? alUnackColor : alNormalColor;
+    }
+    else
+    {
+        ctx.fillStyle = pEvent.GetVar("selMain").Value === i ? selectedColor : alNormalColor;
+    }
+
+    ctx.fillRect(dx/titleElements * i, 0, dx/titleElements, dy/2.5);
+    ctx.fill();
+}
+
+//subtitles rect
+for(var i = 0; i < aSubTitles.GetSize(1); i++)
+{
+    if(subStripes.GetItem(i) === "2")
+    {
+        ctx.fillStyle = pEvent.GetVar("blink").Value ? alActColor : alNormalColor;
+    }
+    else if(subStripes.GetItem(i) === "1")
+    {
+        ctx.fillStyle = alActColor;
+    }
+    else if(subStripes.GetItem(i) === "3")
+    {
+        ctx.fillStyle = pEvent.GetVar("blink").Value ? alUnackColor : alNormalColor;
+    }
+    else
+    {
+        ctx.fillStyle = pEvent.GetVar("selSub").Value === i ? selectedColor : alNormalColor;
+    }
+    
+    ctx.fillRect(dx/subTitleElements * i, dy/2, dx/subTitleElements, dy/2.5);
+    ctx.fill();
+}
+
+//adjust text style
+ctx.font = "22px Arial";
+ctx.textAlign = "center";
+
+//title text
+for(var i = 0; i < aTitles.GetSize(1); i++)
+{  
+    ctx.strokeStyle = pEvent.GetVar("selMain").Value === i ? "white" : "black";
+    ctx.fillStyle = pEvent.GetVar("selMain").Value === i ? "white" : "black";
+    ctx.fillText(Pm.StringSub(aTitles.GetItem(i), Pm.StringFind(aTitles.GetItem(i), "_",0) + 1), dx/titleElements * i + dx/titleElements/2, dy/3);
+    ctx.stroke();
+}
+
+//subtitle text
+for(var i = 0; i < aSubTitles.GetSize(1); i++)
+{  
+    ctx.strokeStyle = pEvent.GetVar("selSub").Value === i ? "white" : "black";
+    ctx.fillStyle = pEvent.GetVar("selSub").Value === i ? "white" : "black";
+    ctx.fillText(Pm.StringSub(aSubTitles.GetItem(i), Pm.StringFind(aSubTitles.GetItem(i), "_",0) + 1), dx/subTitleElements * i + dx/subTitleElements/2, dy/3 + dy/2);
+    ctx.stroke();
+}
+
+////titles line
+//ctx.lineWidth = 3;
+
+//for(var i = 0; i < aTitles.GetSize(1); i++)
+//{
+//    if(pEvent.GetVar("selMain").Value !== i)
+//    {
+//        ctx.strokeStyle = "black";
+//        ctx.moveTo(dx/titleElements * i, dy/2.5-2);
+//        ctx.lineTo(dx/titleElements * i + dx/titleElements, dy/2.5-2);
+//        ctx.stroke();
+//    }
+//}
+
+////subtitles line
+//for(var i = 0; i < aSubTitles.GetSize(1); i++)
+//{
+//    if(pEvent.GetVar("selSub").Value !== i)
+//    {
+//        ctx.moveTo(dx/titleElements * i, dy/2 + dy/2.5 -2);
+//        ctx.lineTo(dx/titleElements * i + dx/titleElements, dy/2 + dy/2.5 -2);
+//        ctx.stroke();
+//    }
+//}
+]]>
+</MenuOnDrawMethod>
+<ToolbarOnViewerResizeEvent>
+<![CDATA[
+pMe.Dx = pEvent.Dx > pMe.IniDx ? pEvent.Dx : pMe.IniDx;
+
+var dx = pMe.Dx - pMe.IniDx;
+var oItem = pMe.Items("/time");
+
+oItem.X = oItem.IniX + dx;
+
+pMe.Refresh();
+]]>
+</ToolbarOnViewerResizeEvent>  
+  
+<ToolbarOnButtonUpEvent_button2>
+<![CDATA[
+//#pragma variable sDlgTitle=Macro("$.text('sys','alarmsName')");
+
+var aList = Pm.FindViewers("groups:menu;viewers:alarm_state;","", "columns:path,title,alstate3,alstate2,alstate1,alhoot;");
+var sViewer = Pm.SelectionDialog(aList, "", sDlgTitle, "size:500,350;autoselect:1;");
+
+if(Pm.IsValid(sViewer))
+pMe.PmPanel.OpenView(sViewer, "target:_blank;", "");
+]]>
+</ToolbarOnButtonUpEvent_button2>  
+  
+<ToolbarOnButtonUpEvent_button3>
+<![CDATA[
+//#pragma variable sDlgTitle=Macro("$.text('sys','eventsName')");
+
+var aList = Pm.FindViewers("groups:menu;viewers:event;", "", "columns:path,title;");
+var sViewer = Pm.SelectionDialog(aList, "", sDlgTitle, "size:500,350;autoselect:1;");
+
+if(Pm.IsValid(sViewer))
+  pMe.PmPanel.OpenView(sViewer, "target:_blank;", "");
+]]>
+</ToolbarOnButtonUpEvent_button3>  
+  
+<ToolbarOnButtonUpEvent_button4>
+<![CDATA[
+pMe.PmPanel.OpenView("/#glob/infosystem", "target:_blank;");
+]]>
+</ToolbarOnButtonUpEvent_button4>  
+
+<ToolbarOnButtonUpEvent_button5>
+<![CDATA[
+Pm.AppStop();
+]]>
+</ToolbarOnButtonUpEvent_button5>    
+
+<ToolbarOnRefreshEvent_time>
+<![CDATA[
+pMe.SetProp("Value", Pm.CreatePmDateObject().Format("%H:%M:%S"));
+]]>
+</ToolbarOnRefreshEvent_time>     
+
+<ToolbarOnMousePressEvent_user>
+<![CDATA[
+if(pEvent.Action == 0)
+{
+    Pm.WndLogon(true);
+}
+]]>
+</ToolbarOnMousePressEvent_user>      
+  
+<test>
+<![CDATA[
+
+]]>
+</test>
+</Root>

@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document Load="Auto">
+	<Cfg Name="Default">
+		<Content ver="80323">
+			<GItem Name="Canvas2" Type="PmiCanvas">
+				<Prop Name="EnabledInRt">1</Prop>
+				<Prop Name="EnabledInPanel">1</Prop>
+				<Prop Name="EnabledInWeb">1</Prop>
+				<Prop Name="EnabledInPrint">1</Prop>
+				<Prop Name="Attr0Dt">;24960</Prop>
+				<Prop Name="X">230</Prop>
+				<Prop Name="Y">200</Prop>
+				<Prop Name="Dx">100</Prop>
+				<Prop Name="Dy">350</Prop>
+				<Props Name="Params">
+					<Prop Name="tagName" Type="par">aout1</Prop>
+					<Prop Name="fraction" Type="par">2</Prop>
+				</Props>
+				<Prop Name="ToolTip">
+					<DStatic></DStatic>
+					<DBind Type="GP">
+						<Prop Name="Value">.;Vars("Description")</Prop>
+						<Prop Name="Reconnect">0</Prop>
+					</DBind>
+				</Prop>
+				<Props Name="LocalProps">
+					<Prop Name="blink" Type="bool">0</Prop>
+					<Prop Name="alUnackColor" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">/Z45AppCore/Colors/#vars/alUnackColor;Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="alActColor" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">/Z45AppCore/Colors/#vars/alActColor;Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="alNormalColor" Type="string">
+						<DStatic Type="string">black</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">/Z45AppCore/Colors/#vars/alNormalColor;Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="alInhColor" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">/Z45AppCore/Colors/#vars/alInhColor;Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="barGraphColor1" Type="string">
+						<DStatic Type="string">#30ccff</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("../../Z45AppCore/AoutData/",$.par("tagName"),"/#vars/barGraphColor1");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="barGraphColor2" Type="string">
+						<DStatic Type="string">#a8ccf0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("../../Z45AppCore/AoutData/",$.par("tagName"),"/#vars/barGraphColor2");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="fraction" Type="integer">0</Prop>
+					<Prop Name="quality" Type="integer">
+						<DStatic Type="integer">0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/ValueOut");Quality</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="ManualMode" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("../../Z45AppCore/AoutData/",$.par("tagName"),"/#vars/ManualMode");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HWSigFault" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/HWSigFault");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="HWSigFault_ALAck" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/HWSigFault_ALAck");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="ValueOut" Type="double">
+						<DStatic Type="double">100</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/ValueOut");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Unit" Type="string">
+						<DStatic Type="string">unit</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/Unit");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Min" Type="double">
+						<DStatic Type="double">0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/Min");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Max" Type="double">
+						<DStatic Type="double">100</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/Max");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="AnyAl" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/AnyAl");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="AnyAck" Type="bool">
+						<DStatic>0</DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/AnyAck");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Description" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/Description");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+					<Prop Name="Note" Type="string">
+						<DStatic Type="string"></DStatic>
+						<DBind Type="PP">
+							<Prop Name="Value">$.join("/Z45AppCore/AoutData/",$.par("tagName"),"/#vars/Note");Value</Prop>
+							<Prop Name="Reconnect">0</Prop>
+						</DBind>
+					</Prop>
+				</Props>
+				<Prop Name="Enabled">1</Prop>
+				<Prop Name="Visible">1</Prop>
+				<Prop Name="DrawBg">1</Prop>
+				<Prop Name="FocusType">0</Prop>
+				<Prop Name="MenuType">0</Prop>
+				<Prop Name="UseParentVars">0</Prop>
+				<Event Name="onStart" Type="Pm">
+					<Script><![CDATA[pMe.Vars("fraction").Value = pMe.GetPar("fraction");]]></Script>
+				</Event>
+				<Event Name="onStop" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onRefresh" Type="Pm">
+					<Script><![CDATA[pMe.Vars("blink").Value = pMe.Vars("blink").Value === false ? true : false;
+
+//Note check
+pMe.GetChildByIndex(0).Visible = Pm.StringLen(pMe.Vars("Note").Value) > 0 ? true : false;]]></Script>
+				</Event>
+				<Event Name="onModeChange" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onFocusIn" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onFocusOut" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onKeyPress" Type="Pm">
+					<Script><![CDATA[]]></Script>
+				</Event>
+				<Event Name="onMousePress" Type="Pm">
+					<Script><![CDATA[if(pEvent.Action === 0)
+{
+    var sPos = "pos:view," + (pMe.X+pMe.Dx) + "," + pMe.Y + ";";
+    pMe.PmPanel.OpenView("/Z45AppCore/Z45_Faceplates/_AOut_FP", "target:_blank;" + sPos, "par:tagName=" + pMe.GetPar("tagName") + ";par:fraction=" + pMe.GetPar("fraction"));
+}
+
+]]></Script>
+				</Event>
+				<Event Name="onMenuSelect" Type="Pm">
+					<Script><![CDATA[var sPos = "pos:view," + (pMe.X+pMe.Dx) + "," + pMe.Y + ";";
+
+switch(pEvent.Name)
+{
+    case "AckAl":
+        pMe.Vars("HWSigFault_ALAck").Value = false;
+        break;
+    case "Trend":
+        pMe.PmPanel.OpenView("/Z45AppCore/Z45_Faceplates/_AOutTrend_FP", "target:_blank;" + sPos, "par:tagName=" + pMe.GetPar("tagName") + ";");
+        break;
+    case "Events":
+        pMe.PmPanel.OpenView("/Z45AppCore/Events/#history", "target:_blank;" + sPos, "s.source:" + pMe.GetPar("tagName") + ";");
+        break;
+    case "Alarms":
+        pMe.PmPanel.OpenView("/Z45AppCore/Alarms/#state", "target:_blank;" + sPos, "s.source:" + pMe.GetPar("tagName") + ";");
+        break;
+}]]></Script>
+				</Event>
+				<Event Name="onMenuFill" Type="Pm">
+					<Script><![CDATA[pEvent.Menu.AddMenu("Alarms", "Alarmy");
+pEvent.Menu.AddMenu("Events", "Eventy");
+pEvent.Menu.AddMenu("Trend", "Trend");
+pEvent.Menu.AddMenu("AckAl", "Potvrdit Alarmy");]]></Script>
+				</Event>
+				<Methods/>
+				<GItem Name="Note" Type="PmiRasterImage">
+					<Prop Name="EnabledInRt">1</Prop>
+					<Prop Name="EnabledInPanel">1</Prop>
+					<Prop Name="EnabledInWeb">1</Prop>
+					<Prop Name="EnabledInPrint">1</Prop>
+					<Prop Name="Attr0Dt">;24960</Prop>
+					<Prop Name="X">0</Prop>
+					<Prop Name="Y">335</Prop>
+					<Prop Name="Dx">20</Prop>
+					<Prop Name="Dy">15</Prop>
+					<Props Name="Params"/>
+					<Prop Name="ToolTip"></Prop>
+					<Props Name="LocalProps"/>
+					<Prop Name="Enabled">1</Prop>
+					<Prop Name="Visible">1</Prop>
+					<Prop Name="DrawBg">0</Prop>
+					<Prop Name="FocusType">1</Prop>
+					<Prop Name="MenuType">0</Prop>
+					<Prop Name="File">#pmres:Img/IconAbout1.svg</Prop>
+					<Prop Name="TypeSize">0</Prop>
+					<Prop Name="TilesEnabled">0</Prop>
+					<Prop Name="CropEnabled">0</Prop>
+					<Prop Name="CropX">0</Prop>
+					<Prop Name="CropY">0</Prop>
+					<Prop Name="CropDx">100</Prop>
+					<Prop Name="CropDy">100</Prop>
+					<Prop Name="TranspColorEnabled">1</Prop>
+					<Prop Name="TranspColor">#ffffff</Prop>
+					<Prop Name="BgColorEnabled">0</Prop>
+					<Prop Name="LightColorEnabled">0</Prop>
+					<Prop Name="BlendEnabled">0</Prop>
+					<Prop Name="RotationType">0</Prop>
+					<Prop Name="ConstPagesRatio">0</Prop>
+					<Event Name="onStart" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onStop" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onRefresh" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onModeChange" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onFocusIn" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onFocusOut" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onKeyPress" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMousePress" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMenuSelect" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Event Name="onMenuFill" Type="Pm">
+						<Script><![CDATA[]]></Script>
+					</Event>
+					<Methods/>
+				</GItem>
+				<Methods Name="Canvas">
+					<Method Name="Alarm">
+						<Prop Name="Params">ctx,dx,dy,blink</Prop>
+						<Script><![CDATA[var alUnackColor = pEvent.GetVar("alUnackColor").Value;
+var alActColor = pEvent.GetVar("alActColor").Value;
+var alNormalColor = pEvent.GetVar("alNormalColor").Value;
+var alInhColor = pEvent.GetVar("alInhColor").Value;
+
+var Alarm = pEvent.GetVar("AnyAl").Value;
+var ALAck = pEvent.GetVar("AnyAck").Value;;
+
+if(Alarm && ALAck)
+{
+    ctx.fillStyle = blink ? alActColor : alNormalColor;
+}
+else if(Alarm && !ALAck)
+{
+    ctx.fillStyle = alActColor;
+}
+else if(!Alarm && ALAck)
+{
+    ctx.fillStyle = blink ? alUnackColor : alNormalColor;
+}
+else
+{
+    ctx.fillStyle = alNormalColor;
+}
+
+ctx.fillRect(0, 0, dx, dy);]]></Script>
+					</Method>
+					<Method Name="Background">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var borderLineX = dx * 0.035;
+var borderLineY = dy * 0.035 / 3.5;
+
+ctx.fillStyle = "#c0c0c0";
+ctx.fillRect(borderLineX, borderLineY, dx - 2 * borderLineX, dy - 2 * borderLineY);]]></Script>
+					</Method>
+					<Method Name="Bar">
+						<Prop Name="Params">ctx,dx,dy,Value</Prop>
+						<Script><![CDATA[//background
+var barSpaceX = dx * 0.25;
+var barSpaceY = dy * 0.25 / 3.5;
+
+var barGraphColor1 = pEvent.GetVar("barGraphColor1").Value;
+var barGraphColor2 = pEvent.GetVar("barGraphColor2").Value;
+
+ctx.fillStyle = "white";
+ctx.fillRect(barSpaceX, barSpaceY, dx - 2 * barSpaceX, dy * 0.7);
+
+//value
+var Min = pEvent.GetVar("Min").Value;
+var Max = pEvent.GetVar("Max").Value;
+
+if(Value > Min)
+{
+    var vBarSpaceX = dx * 0.28;
+    var vBarSpaceY = dy * 0.28 / 3.5;
+    var valPerc = Pm.Round((Value - Min) / ((Max - Min) / 1), 0.01);
+    valPerc = valPerc > 1 ? 1 : valPerc;
+    
+    var invPerc = 1 - valPerc;
+    
+    var grd2 = ctx.createLinearGradient(vBarSpaceX, vBarSpaceY + invPerc*dy * 0.7, barSpaceX + dx - 2 * barSpaceX, barSpaceY + invPerc*dy * 0.7 + valPerc*dy * 0.7);
+    grd2.addColorStop(0, barGraphColor1);
+    grd2.addColorStop(1, barGraphColor2);
+    
+    ctx.fillStyle = grd2;
+    ctx.fillRect(vBarSpaceX, vBarSpaceY + invPerc*dy * 0.7, dx - 2 * vBarSpaceX, valPerc*dy * 0.7 - 2*(vBarSpaceY - barSpaceY))
+}
+
+//min, max
+var mFontSize = Pm.Round(dy * 0.0375, 1) > 13 ? 13 : Pm.Round(dy * 0.0375, 1);
+
+ctx.strokeStyle = "black";
+ctx.fillStyle = "black";
+ctx.font = mFontSize + "px arial";
+ctx.textAlign = "center";
+
+ctx.fillText(Max, dx/2, barSpaceY - 0.4*mFontSize);
+ctx.fillText(Min, dx/2, barSpaceY + (dy * 0.7) + mFontSize);]]></Script>
+					</Method>
+					<Method Name="Mode">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var fFontSize = Pm.Round(dy * 0.1, 1);
+var borderLineY = dy * 0.035 / 3.5;
+var ManualMode = pEvent.GetVar("ManualMode").Value;
+
+if(ManualMode)
+{
+    ctx.strokeStyle = "gray";
+    ctx.fillStyle = "gray";
+    ctx.font = "bold " + fFontSize + "px arial";
+    ctx.textAlign = "center";
+    ctx.fillText("M", dx * 0.9, dy - borderLineY);
+}]]></Script>
+					</Method>
+					<Method Name="Quality">
+						<Prop Name="Params">ctx,dx,dy</Prop>
+						<Script><![CDATA[var qBorderSize = dx * 0.05;
+var quality = pEvent.GetVar("quality").Value;
+
+if(quality !== 192)
+{
+    ctx.beginPath();
+    ctx.lineWidth = qBorderSize;
+    ctx.strokeStyle = "red";
+    ctx.moveTo(0, 0);
+    ctx.lineTo(dx, dy);
+    ctx.moveTo(dx, 0);
+    ctx.lineTo(0, dy);
+    ctx.stroke();
+    ctx.closePath();
+}]]></Script>
+					</Method>
+					<Method Name="Value">
+						<Prop Name="Params">ctx,dx,dy,Value</Prop>
+						<Script><![CDATA[//value
+var Unit = pEvent.GetVar("Unit").Value;
+var vFontSize = Pm.Round(dy * 0.075, 1) > 26 ? 26 :Pm.Round(dy * 0.075, 1);
+var barSpaceY = dy * 0.25 / 3.5;
+var vBarSpaceY = dy * 0.28 / 3.5;
+
+ctx.strokeStyle = "black";
+ctx.fillStyle = "black";
+ctx.font = vFontSize + "px arial";
+ctx.textAlign = "center";
+ctx.fillText(Value, dx/2, barSpaceY + (dy * 0.7) + 2*vFontSize);
+
+//unit
+var uFontSize = Pm.Round(vFontSize * 0.5, 1) > 13 ? 13 : Pm.Round(vFontSize * 0.5, 1);
+
+ctx.strokeStyle = "black";
+ctx.fillStyle = "black";
+ctx.font = uFontSize + "px arial";
+ctx.textAlign = "center";
+ctx.fillText(Unit, dx/2, vBarSpaceY + (dy * 0.7) + 2.5*vFontSize);]]></Script>
+					</Method>
+					<Method Name="onDraw">
+						<Prop Name="Params"></Prop>
+						<Script><![CDATA[//init
+var ctx = pEvent.GetCtx(0);
+var dx = pEvent.CtxDx;
+var dy = pEvent.CtxDy;
+var blink = pEvent.GetVar("blink").Value;
+
+
+var fraction = pEvent.GetVar("fraction").Value;
+var ValueOut =  Pm.Round(pEvent.GetVar("ValueOut").Value, 1 / Pm.Pow(10, fraction));
+
+pEvent.Methods.Alarm(ctx, dx, dy, blink);
+pEvent.Methods.Background(ctx, dx, dy);
+pEvent.Methods.Bar(ctx, dx, dy, ValueOut);
+pEvent.Methods.Value(ctx, dx, dy, ValueOut);
+pEvent.Methods.Mode(ctx, dx, dy);
+pEvent.Methods.Quality(ctx, dx, dy);
+
+
+]]></Script>
+					</Method>
+				</Methods>
+			</GItem>
+		</Content>
+	</Cfg>
+</Document>

@@ -1,0 +1,1665 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<Root>
+
+<AinDataOnStartEvent>
+<![CDATA[
+'ALARMS REGISTRATION
+
+Alarms.RegisterNew pMe.Name & "_AlarmHH" , "IO", pMe.Name, "Alarm HH"
+Alarms.RegisterNew pMe.Name & "_AlarmH" , "IO", pMe.Name, "Alarm H"
+Alarms.RegisterNew pMe.Name & "_AlarmL" , "IO", pMe.Name, "Alarm L"
+Alarms.RegisterNew pMe.Name & "_AlarmLL" , "IO", pMe.Name, "Alarm LL"
+
+Alarms.RegisterNew pMe.Name & "_HWSigFault" , "IO", pMe.Name, "HW Signal Fault"
+]]>
+</AinDataOnStartEvent>
+
+<AinDataOnItemAfterWriteEvent>
+<![CDATA[
+
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("AlarmHH").Value = Pm.GetBit(pEvent.Item.Value, 8)
+    pMe.Item("AlarmH").Value = Pm.GetBit(pEvent.Item.Value, 9)
+    pMe.Item("AlarmL").Value = Pm.GetBit(pEvent.Item.Value, 10)
+    pMe.Item("AlarmLL").Value = Pm.GetBit(pEvent.Item.Value, 11)
+    pMe.Item("HWSigFault").Value = Pm.GetBit(pEvent.Item.Value, 12)
+    pMe.Item("Force").Value = Pm.GetBit(pEvent.Item.Value, 13)
+    pMe.Item("AlarmLInhibit").Value = Pm.GetBit(pEvent.Item.Value, 0)
+    pMe.Item("AlarmLLInhibit").Value = Pm.GetBit(pEvent.Item.Value, 1)
+    pMe.Item("HH_ALEn").Value = Pm.GetBit(pEvent.Item.Value, 2)
+    pMe.Item("H_ALEn").Value = Pm.GetBit(pEvent.Item.Value, 3)
+    pMe.Item("L_ALEn").Value = Pm.GetBit(pEvent.Item.Value, 4)
+    pMe.Item("LL_ALEn").Value = Pm.GetBit(pEvent.Item.Value, 5)
+    pMe.Item("HH_En").Value = Pm.GetBit(pEvent.Item.Value, 6)
+    pMe.Item("H_En").Value = Pm.GetBit(pEvent.Item.Value, 7)
+  case "AlarmHH"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "AlarmH"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "AlarmL"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "AlarmLL"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "HWSigFault"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "Force"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "AlarmLInhibit"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "AlarmLLInhibit"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+  case "HH_ALEn"
+    pMe.Item("W1").Bit(2) = pEvent.Item.Value
+  case "H_ALEn"
+    pMe.Item("W1").Bit(3) = pEvent.Item.Value
+  case "L_ALEn"
+    pMe.Item("W1").Bit(4) = pEvent.Item.Value
+  case "LL_ALEn"
+    pMe.Item("W1").Bit(5) = pEvent.Item.Value
+  case "HH_En"
+    pMe.Item("W1").Bit(6) = pEvent.Item.Value
+  case "H_En"
+    pMe.Item("W1").Bit(7) = pEvent.Item.Value
+  
+  'W2
+  case "W2" 
+    pMe.Item("L_En").Value = Pm.GetBit(pEvent.Item.Value, 8)
+    pMe.Item("LL_En").Value = Pm.GetBit(pEvent.Item.Value, 9)
+    pMe.Item("HH_ALAck").Value = Pm.GetBit(pEvent.Item.Value, 10)
+    pMe.Item("H_ALAck").Value = Pm.GetBit(pEvent.Item.Value, 11)
+    pMe.Item("L_ALAck").Value = Pm.GetBit(pEvent.Item.Value, 12)
+    pMe.Item("LL_ALAck").Value = Pm.GetBit(pEvent.Item.Value, 13)
+    pMe.Item("AlarmHHInhibit").Value = Pm.GetBit(pEvent.Item.Value, 2)
+    pMe.Item("AlarmHInhibit").Value = Pm.GetBit(pEvent.Item.Value, 3)
+  case "L_En"
+    pMe.Item("W2").Bit(8) = pEvent.Item.Value
+  case "LL_En"
+    pMe.Item("W2").Bit(9) = pEvent.Item.Value
+  case "HH_ALAck"
+    pMe.Item("W2").Bit(10) = pEvent.Item.Value
+  case "H_ALAck"
+    pMe.Item("W2").Bit(11) = pEvent.Item.Value
+  case "L_ALAck"
+    pMe.Item("W2").Bit(12) = pEvent.Item.Value
+  case "LL_ALAck"
+    pMe.Item("W2").Bit(13) = pEvent.Item.Value
+  case "AlarmHHInhibit"
+    pMe.Item("W2").Bit(2) = pEvent.Item.Value
+  case "AlarmHInhibit"
+    pMe.Item("W2").Bit(3) = pEvent.Item.Value
+end select
+
+'********************************************************************************
+'ALARM MANAGEMENT
+'********************************************************************************
+
+'AlarmHH
+if pEvent.Item.Name = "AlarmHH" and pMe.Item("HH_ALEn") then
+    'Activate alarm
+    if pMe.Item("AlarmHH") then
+        Alarms.Item(pMe.Name & "_AlarmHH").Activate
+        pMe.Item("HH_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_AlarmHH" , "event0", pMe.Name, "Alarm HH"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("AlarmHH") then
+        Alarms.Item(pMe.Name & "_AlarmHH").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "HH_ALAck" and not pMe.Item("HH_ALAck") then
+    Alarms.Item(pMe.Name & "_AlarmHH").Acknowledge
+end if
+
+'AlarmH
+if pEvent.Item.Name = "AlarmH" and pMe.Item("H_ALEn").Value then
+    'Activate alarm
+    if pMe.Item("AlarmH") then
+        Alarms.Item(pMe.Name & "_AlarmH").Activate
+        pMe.Item("H_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_AlarmH" , "event0", pMe.Name, "Alarm H"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("AlarmH") then
+        Alarms.Item(pMe.Name & "_AlarmH").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "H_ALAck" and not pMe.Item("H_ALAck") then
+  Alarms.Item(pMe.Name & "_AlarmH").Acknowledge
+end if
+
+'AlarmL
+if pEvent.Item.Name = "AlarmL" and pMe.Item("L_ALEn").Value then
+    'Activate alarm
+    if pMe.Item("AlarmL") then
+        Alarms.Item(pMe.Name & "_AlarmL").Activate
+        pMe.Item("L_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_AlarmL" , "event0", pMe.Name, "Alarm L"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("AlarmL") then
+        Alarms.Item(pMe.Name & "_AlarmL").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "L_ALAck" and not pMe.Item("L_ALAck") then
+    Alarms.Item(pMe.Name & "_AlarmL").Acknowledge
+end if
+
+'AlarmLL
+if pEvent.Item.Name = "AlarmLL" and pMe.Item("LL_ALEn").Value then
+    'Activate alarm
+    if pMe.Item("AlarmLL") then
+        Alarms.Item(pMe.Name & "_AlarmLL").Activate
+        pMe.Item("LL_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_AlarmLL" , "event0", pMe.Name, "Alarm LL"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("AlarmLL") then
+        Alarms.Item(pMe.Name & "_AlarmLL").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "LL_ALAck" and not pMe.Item("LL_ALAck") then
+    Alarms.Item(pMe.Name & "_AlarmLL").Acknowledge
+end if
+
+'HWSigFault
+if pEvent.Item.Name = "HWSigFault" then
+    'Activate alarm
+    if pMe.Item("HWSigFault") then
+        Alarms.Item(pMe.Name & "_HWSigFault").Activate
+        pMe.Item("HWSigFault_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_HWSigFault" , "event0", pMe.Name, "HWSigFault"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("HWSigFault") then
+        Alarms.Item(pMe.Name & "_HWSigFault").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "HWSigFault_ALAck" and not pMe.Item("HWSigFault_ALAck") then
+    Alarms.Item(pMe.Name & "_HWSigFault").Acknowledge
+end if
+
+pMe.Item("AnyAl").Value = pMe.Item("AlarmHH") and pMe.Item("HH_ALEn") or pMe.Item("AlarmH") and pMe.Item("H_ALEn") or pMe.Item("AlarmL") and pMe.Item("L_ALEn") or pMe.Item("AlarmLL") and pMe.Item("LL_ALEn") or pMe.Item("HWSigFault")
+pMe.Item("AnyAck").Value = pMe.Item("HH_ALAck") or pMe.Item("H_ALAck") or pMe.Item("L_ALAck") or pMe.Item("LL_ALAck") or pMe.Item("HWSigFault_ALAck")
+pMe.Item("AnyInh").Value = pMe.Item("AlarmHHInhibit") or pMe.Item("AlarmHInhibit") or pMe.Item("AlarmLInhibit") or pMe.Item("AlarmLLInhibit")
+
+'********************************************************************************
+'TREND MANAGEMENT
+'********************************************************************************
+
+'Min
+if pEvent.Item.Name = "Min" then
+    pMe.Item("Value").Extension("trend").Min = pMe.Item("Min").Value
+end if
+
+'Max
+if pEvent.Item.Name = "Max" then
+    pMe.Item("Value").Extension("trend").Max = pMe.Item("Max").Value
+end if
+
+'********************************************************************************
+'EVENT MANAGEMENT
+'********************************************************************************
+
+'AlarmHH
+if pEvent.Item.Name = "AlarmHH" and pMe.Item("AlarmHH") and pMe.Item("HH_En") then
+    Events.ActivateNew pMe.Name & "_AlarmHH" , "event0", pMe.Name, "Alarm HH"
+end if
+
+'AlarmH
+if pEvent.Item.Name = "AlarmH" and pMe.Item("AlarmH") and pMe.Item("H_En") then
+    Events.ActivateNew pMe.Name & "_AlarmH" , "event0", pMe.Name, "Alarm H"
+end if
+
+'AlarmLL
+if pEvent.Item.Name = "AlarmLL" and pMe.Item("AlarmLL") and pMe.Item("LL_En") then
+    Events.ActivateNew pMe.Name & "_AlarmLL" , "event0", pMe.Name, "Alarm LL"
+end if
+
+'AlarmL
+if pEvent.Item.Name = "AlarmL" and pMe.Item("AlarmL") and pMe.Item("L_En") then
+    Events.ActivateNew pMe.Name & "_AlarmL" , "event0", pMe.Name, "Alarm L"
+end if
+
+]]>
+</AinDataOnItemAfterWriteEvent>
+  
+<PreselDataOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("Presel").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("PreValid").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("SetP").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("ResP").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("PreselEn").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("HMI_PreselEn").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+  case "Presel"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "PreValid"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "SetP"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "ResP"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "PreselEn"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "HMI_PreselEn"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+end select
+]]>
+</PreselDataOnItemAfterWriteEvent>
+
+<EvExtSource>
+<![CDATA[
+$.expr("pDE.Var.Owner.Name")
+]]>
+</EvExtSource>
+
+<EvExtDesc>
+<![CDATA[
+$.join($.expr("pDE.var.Name"),"=",$.expr("pDE.var.Value"))
+]]>
+</EvExtDesc>
+
+<TrendExtName>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".Value")
+]]>
+</TrendExtName>
+
+<TrendExtNameActSP>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".ActSP")
+]]>
+</TrendExtNameActSP>
+
+<TrendExtNameActPV>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".ActPV")
+]]>
+</TrendExtNameActPV>
+
+<TrendExtNameCmdValue>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".CmdValue")
+]]>
+</TrendExtNameCmdValue>
+
+<TrendExtNameActFB>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".ActFB")
+]]>
+</TrendExtNameActFB>
+
+<TrendExtNameValueOut>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".ValueOut")
+]]>
+</TrendExtNameValueOut>
+
+<TrendExtNameHMI_PV>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".HMI_PV")
+]]>
+</TrendExtNameHMI_PV>
+
+<TrendExtNameHMI_SV>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".HMI_SV")
+]]>
+</TrendExtNameHMI_SV>
+
+<DinDataOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("Alarm").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("Force").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("NormalState").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("Value").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("HWSig").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+    pMe.Item("AlarmInhibit").Value = Pm.GetBit(pMe.Item("W1").Value, 15)
+    pMe.Item("ALAck").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
+    pMe.Item("Sig_ALEn").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
+  case "Alarm"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "Force"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "NormalState"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "Value"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "HWSig"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+  case "AlarmInhibit"
+    pMe.Item("W1").Bit(15) = pEvent.Item.Value
+  case "ALAck"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "Sig_ALEn"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+end select
+
+'********************************************************************************
+'ALARM MANAGEMENT
+'********************************************************************************
+
+'Value
+if pEvent.Item.Name = "Alarm" and pMe.Item("Sig_ALEn") then
+    'Activate alarm
+    if pMe.Item("Alarm") then
+        Alarms.Item(pMe.Name & "_Alarm").Activate
+        pMe.Item("ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "Alarm"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("Alarm") then
+        Alarms.Item(pMe.Name & "_Alarm").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "ALAck" and not pMe.Item("ALAck") then
+    Alarms.Item(pMe.Name & "_Alarm").Acknowledge
+end if
+
+pMe.Item("AnyAl").Value = pMe.Item("Alarm") and pMe.Item("Sig_ALEn")
+pMe.Item("AnyAck").Value = pMe.Item("ALAck")
+
+]]>
+</DinDataOnItemAfterWriteEvent>
+
+<DinDataOnStartEvent>
+<![CDATA[
+'ALARMS REGISTRATION
+
+Alarms.RegisterNew pMe.Name & "_Alarm" , "IO", pMe.Name, "Value different"
+]]>
+</DinDataOnStartEvent>
+  
+<AnalogPosCtrlDataOnStartEvent>
+<![CDATA[
+'ALARMS REGISTRATION
+
+Alarms.RegisterNew pMe.Name & "_FBFault" , "IO", pMe.Name, "Feedback fault"
+Alarms.RegisterNew pMe.Name & "_PosError" , "IO", pMe.Name, "Position error"
+Alarms.RegisterNew pMe.Name & "_HWSigFault_FB" , "IO", pMe.Name, "HW signal fault feedback"
+]]>
+</AnalogPosCtrlDataOnStartEvent>
+
+<AnalogPosCtrlDataOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("Seq").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("Cen").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("Loc").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("E1").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("E2").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("Man").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("FBFault").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+    pMe.Item("PosError").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
+    pMe.Item("HWSigFault_FB").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
+    pMe.Item("HMI_ManSel").Value = Pm.GetBit(pMe.Item("W1").Value, 2)
+    pMe.Item("HMI_E1Sel").Value = Pm.GetBit(pMe.Item("W1").Value, 3)
+    pMe.Item("HMI_E2Sel").Value = Pm.GetBit(pMe.Item("W1").Value, 4)
+    pMe.Item("HMI_CenSel").Value = Pm.GetBit(pMe.Item("W1").Value, 5)
+    pMe.Item("HMI_Sim").Value = Pm.GetBit(pMe.Item("W1").Value, 6)
+    pMe.Item("HMI_OutOfSrv").Value = Pm.GetBit(pMe.Item("W1").Value, 7)
+  case "Seq"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "Cen"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "Loc"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "E1"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "E2"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "Man"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "FBFault"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+  case "PosError"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "HWSigFault_FB"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+  case "HMI_ManSel"
+    pMe.Item("W1").Bit(2) = pEvent.Item.Value
+  case "HMI_E1Sel"
+    pMe.Item("W1").Bit(3) = pEvent.Item.Value
+  case "HMI_E2Sel"
+    pMe.Item("W1").Bit(4) = pEvent.Item.Value
+  case "HMI_CenSel"
+    pMe.Item("W1").Bit(5) = pEvent.Item.Value
+  case "HMI_Sim"
+    pMe.Item("W1").Bit(6) = pEvent.Item.Value
+  case "HMI_OutOfSrv"
+    pMe.Item("W1").Bit(7) = pEvent.Item.Value
+    
+  'W2
+  case "W2" 
+    pMe.Item("Cmd0").Value = Pm.GetBit(pMe.Item("W2").Value, 8)
+    pMe.Item("Cmd1").Value = Pm.GetBit(pMe.Item("W2").Value, 9)
+    pMe.Item("CmdInc_Int").Value = Pm.GetBit(pMe.Item("W2").Value, 10)
+    pMe.Item("CmdDec_Int").Value = Pm.GetBit(pMe.Item("W2").Value, 11)
+    pMe.Item("FBLoc").Value = Pm.GetBit(pMe.Item("W2").Value, 12)
+    pMe.Item("FB0").Value = Pm.GetBit(pMe.Item("W2").Value, 13)
+    pMe.Item("FB1").Value = Pm.GetBit(pMe.Item("W2").Value, 14)
+    pMe.Item("SetSeq").Value = Pm.GetBit(pMe.Item("W2").Value, 15)
+    pMe.Item("SetCen").Value = Pm.GetBit(pMe.Item("W2").Value, 0)
+    pMe.Item("SetMan").Value = Pm.GetBit(pMe.Item("W2").Value, 1)
+    pMe.Item("SetE1").Value = Pm.GetBit(pMe.Item("W2").Value, 2)
+    pMe.Item("SetE2").Value = Pm.GetBit(pMe.Item("W2").Value, 3)
+    pMe.Item("ConPuAct").Value = Pm.GetBit(pMe.Item("W2").Value, 4)
+  case "Cmd0"
+    pMe.Item("W2").Bit(8) = pEvent.Item.Value
+  case "Cmd1"
+    pMe.Item("W2").Bit(9) = pEvent.Item.Value
+  case "CmdInc_Int"
+    pMe.Item("W2").Bit(10) = pEvent.Item.Value
+  case "CmdDec_Int"
+    pMe.Item("W2").Bit(11) = pEvent.Item.Value
+  case "FBLoc"
+    pMe.Item("W2").Bit(12) = pEvent.Item.Value
+  case "FB0"
+    pMe.Item("W2").Bit(13) = pEvent.Item.Value
+  case "FB1"
+    pMe.Item("W2").Bit(14) = pEvent.Item.Value
+  case "SetSeq"
+    pMe.Item("W2").Bit(15) = pEvent.Item.Value
+  case "SetCen"
+    pMe.Item("W2").Bit(0) = pEvent.Item.Value
+  case "SetMan"
+    pMe.Item("W2").Bit(1) = pEvent.Item.Value
+  case "SetE1"
+    pMe.Item("W2").Bit(2) = pEvent.Item.Value
+  case "SetE2"
+    pMe.Item("W2").Bit(3) = pEvent.Item.Value
+  case "ConPuAct"
+    pMe.Item("W2").Bit(4) = pEvent.Item.Value
+    
+end select
+
+'********************************************************************************
+'ALARM MANAGEMENT
+'********************************************************************************
+
+'FBFault
+if pEvent.Item.Name = "FBFault" then
+    'Activate alarm
+    if pMe.Item("FBFault") then
+        Alarms.Item(pMe.Name & "_FBFault").Activate
+        pMe.Item("FBFault_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "FB Fault"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("FBFault") then
+        Alarms.Item(pMe.Name & "_FBFault").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "FBFault_ALAck" and not pMe.Item("FBFault_ALAck") then
+    Alarms.Item(pMe.Name & "_FBFault").Acknowledge
+end if
+
+'PosError
+if pEvent.Item.Name = "PosError" then
+    'Activate alarm
+    if pMe.Item("PosError") then
+        Alarms.Item(pMe.Name & "_PosError").Activate
+        pMe.Item("PosError_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "Position error"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("PosError") then
+        Alarms.Item(pMe.Name & "_PosError").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "PosError_ALAck" and not pMe.Item("PosError_ALAck") then
+    Alarms.Item(pMe.Name & "_PosError").Acknowledge
+end if
+
+'HWSigFault_FB
+if pEvent.Item.Name = "HWSigFault_FB" then
+    'Activate alarm
+    if pMe.Item("HWSigFault_FB") then
+        Alarms.Item(pMe.Name & "_HWSigFault_FB").Activate
+        pMe.Item("HWSigFault_FB_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "HWSigFault_FB"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("HWSigFault_FB") then
+        Alarms.Item(pMe.Name & "_HWSigFault_FB").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "HWSigFault_FB_ALAck" and not pMe.Item("HWSigFault_FB_ALAck") then
+    Alarms.Item(pMe.Name & "_HWSigFault_FB").Acknowledge
+end if
+
+pMe.Item("AnyAl").Value = pMe.Item("FBFault") or pMe.Item("PosError") or pMe.Item("HWSigFault_FB")
+pMe.Item("AnyAck").Value = pMe.Item("FBFault_ALAck") or pMe.Item("PosError_ALAck") or pMe.Item("HWSigFault_FB_ALAck")
+]]>
+</AnalogPosCtrlDataOnItemAfterWriteEvent>
+
+<AoutDataOnStartEvent>
+<![CDATA[
+'ALARMS REGISTRATION
+
+Alarms.RegisterNew pMe.Name & "_HWSigFault" , "IO", pMe.Name, "HW signal fault feedback"
+]]>
+</AoutDataOnStartEvent>
+  
+<AoutDataOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("ManualMode").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("SetAuto").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("HWSigFault").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("SetManual").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+  case "ManualMode"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "SetAuto"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "HWSigFault"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "SetManual"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+end select
+
+'********************************************************************************
+'ALARM MANAGEMENT
+'********************************************************************************
+
+'HWSigFault
+if pEvent.Item.Name = "HWSigFault" then
+    'Activate alarm
+    if pMe.Item("HWSigFault") then
+        Alarms.Item(pMe.Name & "_HWSigFault").Activate
+        pMe.Item("HWSigFault_ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "HWSigFault"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("HWSigFault") then
+        Alarms.Item(pMe.Name & "_HWSigFault").Inactivate
+    end if
+end if
+
+'Acknowledge alarm
+if pEvent.Item.Name = "HWSigFault_ALAck" and not pMe.Item("HWSigFault_ALAck") then
+    Alarms.Item(pMe.Name & "_HWSigFault").Acknowledge
+end if
+
+pMe.Item("AnyAl").Value = pMe.Item("HWSigFault")
+pMe.Item("AnyAck").Value = pMe.Item("HWSigFault_ALAck")
+
+
+'********************************************************************************
+'TREND MANAGEMENT
+'********************************************************************************
+
+'Min
+if pEvent.Item.Name = "Min" then
+    pMe.Item("ValueOut").Extension("trend").Min = pMe.Item("Min").Value
+end if
+
+'Max
+if pEvent.Item.Name = "Max" then
+    pMe.Item("ValueOut").Extension("trend").Max = pMe.Item("Max").Value
+end if
+]]>
+</AoutDataOnItemAfterWriteEvent>
+
+<OnOffCtrlDataOnStartEvent>
+<![CDATA[
+'ALARMS REGISTRATION
+
+Alarms.RegisterNew pMe.Name & "_FBFault" , "IO", pMe.Name, "Feedback fault"
+]]>
+</OnOffCtrlDataOnStartEvent>
+<GrpCtrlDataOnItemAfterWriteEvent>
+<![CDATA[  
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("GrRFS").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("Cen").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("Seq").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("SetCen").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("SetSeq").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("SeqStart").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("SeqStop").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+    pMe.Item("HMI_SetCen").Value = Pm.GetBit(pMe.Item("W1").Value, 15)
+    pMe.Item("HMI_SetSeq").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
+    pMe.Item("HMI_Start").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
+    pMe.Item("HMI_Stop").Value = Pm.GetBit(pMe.Item("W1").Value, 2)
+    pMe.Item("HMI_Hold").Value = Pm.GetBit(pMe.Item("W1").Value, 3)
+    pMe.Item("PreselMiss").Value = Pm.GetBit(pMe.Item("W1").Value, 4)
+  case "GrRFS"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "Cen"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "Seq"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "SetCen"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "SetSeq"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "HMI_SetCen"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "SeqStart"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+  case "SeqStop"
+    pMe.Item("W1").Bit(15) = pEvent.Item.Value
+  case "HMI_SetSeq"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "HMI_Start"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+  case "HMI_Stop"
+    pMe.Item("W1").Bit(2) = pEvent.Item.Value
+  case "HMI_Hold"
+    pMe.Item("W1").Bit(3) = pEvent.Item.Value
+  case "PreselMiss"
+    pMe.Item("W1").Bit(4) = pEvent.Item.Value
+    
+  'W2
+  case "W2" 
+    pMe.Item("GrpStarted").Value = Pm.GetBit(pMe.Item("W2").Value, 8)
+    pMe.Item("GrpStopped").Value = Pm.GetBit(pMe.Item("W2").Value, 10)
+    pMe.Item("GroupHold").Value = Pm.GetBit(pMe.Item("W2").Value, 12)
+    pMe.Item("GrpStarting").Value = Pm.GetBit(pMe.Item("W2").Value, 13)
+    pMe.Item("GrpStopping").Value = Pm.GetBit(pMe.Item("W2").Value, 14)
+    pMe.Item("RFS").Value = Pm.GetBit(pMe.Item("W2").Value, 15)
+    pMe.Item("GrRR").Value = Pm.GetBit(pMe.Item("W2").Value, 0)
+    pMe.Item("PGM").Value = Pm.GetBit(pMe.Item("W2").Value, 1)
+    pMe.Item("Sim").Value = Pm.GetBit(pMe.Item("W2").Value, 2)
+  case "GrpStarted"
+    pMe.Item("W2").Bit(8) = pEvent.Item.Value    
+  case "GrpStopped"
+    pMe.Item("W2").Bit(10) = pEvent.Item.Value   
+  case "GroupHold"
+    pMe.Item("W2").Bit(12) = pEvent.Item.Value   
+  case "GrpStarting"
+    pMe.Item("W2").Bit(13) = pEvent.Item.Value    
+  case "GrpStopping"
+    pMe.Item("W2").Bit(14) = pEvent.Item.Value   
+  case "RFS"
+    pMe.Item("W2").Bit(15) = pEvent.Item.Value
+  case "GrRR"
+    pMe.Item("W2").Bit(0) = pEvent.Item.Value    
+  case "PGM"
+    pMe.Item("W2").Bit(1) = pEvent.Item.Value   
+  case "Sim"
+    pMe.Item("W2").Bit(2) = pEvent.Item.Value
+
+end select
+]]>
+</GrpCtrlDataOnItemAfterWriteEvent>  
+<DoutDataOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("ManualMode").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("Value").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("InValue").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("SetAuto").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("SetManual").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+  case "ManualMode"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "Value"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "InValue"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "SetAuto"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "SetManual"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+end select
+]]>
+</DoutDataOnItemAfterWriteEvent>
+<OnOffCtrlDataOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("Cmd0Int").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("Cmd1Int").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("IC").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("IB1").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("IB2").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("IB3").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("IB4").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+    pMe.Item("PD").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
+    pMe.Item("ME").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
+    pMe.Item("Auto").Value = Pm.GetBit(pMe.Item("W1").Value, 2)
+    pMe.Item("Seq").Value = Pm.GetBit(pMe.Item("W1").Value, 3)
+    pMe.Item("Cen").Value = Pm.GetBit(pMe.Item("W1").Value, 4)
+    pMe.Item("Loc").Value = Pm.GetBit(pMe.Item("W1").Value, 5)
+    pMe.Item("HMI_OutOfSrv").Value = Pm.GetBit(pMe.Item("W1").Value, 6)
+    pMe.Item("Run").Value = Pm.GetBit(pMe.Item("W1").Value, 7)
+  case "Cmd0Int"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "Cmd1Int"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "IC"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "IB1"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "IB2"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "IB3"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "IB4"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+  case "PD"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "ME"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+  case "Auto"
+    pMe.Item("W1").Bit(2) = pEvent.Item.Value
+  case "Seq"
+    pMe.Item("W1").Bit(3) = pEvent.Item.Value
+  case "Cen"
+    pMe.Item("W1").Bit(4) = pEvent.Item.Value
+  case "Loc"
+    pMe.Item("W1").Bit(5) = pEvent.Item.Value
+  case "HMI_OutOfSrv"
+    pMe.Item("W1").Bit(6) = pEvent.Item.Value
+  case "Run"
+    pMe.Item("W1").Bit(7) = pEvent.Item.Value
+    
+  'W2
+  case "W2" 
+    pMe.Item("RFS").Value = Pm.GetBit(pMe.Item("W2").Value, 8)
+    pMe.Item("FBFault").Value = Pm.GetBit(pMe.Item("W2").Value, 11)
+    pMe.Item("HMI_CenSel").Value = Pm.GetBit(pMe.Item("W2").Value, 12)
+    pMe.Item("HMI_AutoSel").Value = Pm.GetBit(pMe.Item("W2").Value, 13)
+    pMe.Item("HMI_ManSel").Value = Pm.GetBit(pMe.Item("W2").Value, 14)
+    pMe.Item("HMI_IB1Block").Value = Pm.GetBit(pMe.Item("W2").Value, 15)
+    pMe.Item("HMI_IB2Block").Value = Pm.GetBit(pMe.Item("W2").Value, 0)
+    pMe.Item("HMI_IB3Block").Value = Pm.GetBit(pMe.Item("W2").Value, 1)
+    pMe.Item("HMI_IB4Block").Value = Pm.GetBit(pMe.Item("W2").Value, 2)
+    pMe.Item("HMI_IABlock").Value = Pm.GetBit(pMe.Item("W2").Value, 3)
+    pMe.Item("HMI_PDBlock").Value = Pm.GetBit(pMe.Item("W2").Value, 4)
+    pMe.Item("HMI_Sim").Value = Pm.GetBit(pMe.Item("W2").Value, 5)
+    pMe.Item("HMI_Start").Value = Pm.GetBit(pMe.Item("W2").Value, 6)
+    pMe.Item("HMI_Stop").Value = Pm.GetBit(pMe.Item("W2").Value, 7)
+  case "RFS"
+    pMe.Item("W2").Bit(8) = pEvent.Item.Value
+  case "FBFault"
+    pMe.Item("W2").Bit(11) = pEvent.Item.Value
+  case "HMI_CenSel"
+    pMe.Item("W2").Bit(12) = pEvent.Item.Value
+  case "HMI_AutoSel"
+    pMe.Item("W2").Bit(13) = pEvent.Item.Value
+  case "HMI_ManSel"
+    pMe.Item("W2").Bit(14) = pEvent.Item.Value
+  case "HMI_IB1Block"
+    pMe.Item("W2").Bit(15) = pEvent.Item.Value
+  case "HMI_IB2Block"
+    pMe.Item("W2").Bit(0) = pEvent.Item.Value
+  case "HMI_IB3Block"
+    pMe.Item("W2").Bit(1) = pEvent.Item.Value
+  case "HMI_IB4Block"
+    pMe.Item("W2").Bit(2) = pEvent.Item.Value
+  case "HMI_IABlock"
+    pMe.Item("W2").Bit(3) = pEvent.Item.Value
+  case "HMI_PDBlock"
+    pMe.Item("W2").Bit(4) = pEvent.Item.Value
+  case "HMI_Sim"
+    pMe.Item("W2").Bit(5) = pEvent.Item.Value
+  case "HMI_Start"
+    pMe.Item("W2").Bit(6) = pEvent.Item.Value
+  case "HMI_Stop"
+    pMe.Item("W2").Bit(7) = pEvent.Item.Value
+    
+  'W3
+  case "W3" 
+    pMe.Item("HMI_EnAuto").Value = Pm.GetBit(pMe.Item("W3").Value, 8)
+    pMe.Item("Cmd0").Value = Pm.GetBit(pMe.Item("W3").Value, 9)
+    pMe.Item("Cmd1").Value = Pm.GetBit(pMe.Item("W3").Value, 10)
+    pMe.Item("FBLoc").Value = Pm.GetBit(pMe.Item("W3").Value, 13)
+    pMe.Item("FB0").Value = Pm.GetBit(pMe.Item("W3").Value, 14)
+    pMe.Item("SetSeq").Value = Pm.GetBit(pMe.Item("W3").Value, 2)
+    pMe.Item("SetCen").Value = Pm.GetBit(pMe.Item("W3").Value, 5)
+    pMe.Item("SetAuto").Value = Pm.GetBit(pMe.Item("W3").Value, 6)
+    pMe.Item("SetMan").Value = Pm.GetBit(pMe.Item("W3").Value, 7)
+  case "HMI_EnAuto"
+    pMe.Item("W3").Bit(8) = pEvent.Item.Value
+  case "Cmd0"
+    pMe.Item("W3").Bit(9) = pEvent.Item.Value
+  case "Cmd1"
+    pMe.Item("W3").Bit(10) = pEvent.Item.Value
+  case "FBLoc"
+    pMe.Item("W3").Bit(13) = pEvent.Item.Value
+  case "FB0"
+    pMe.Item("W3").Bit(14) = pEvent.Item.Value
+  case "SetSeq"
+    pMe.Item("W3").Bit(2) = pEvent.Item.Value
+  case "SetCen"
+    pMe.Item("W3").Bit(5) = pEvent.Item.Value
+  case "SetAuto"
+    pMe.Item("W3").Bit(6) = pEvent.Item.Value
+  case "SetMan"
+    pMe.Item("W3").Bit(7) = pEvent.Item.Value
+  
+  'W4
+  case "W4" 
+    pMe.Item("Presel").Value = Pm.GetBit(pMe.Item("W4").Value, 8)
+    pMe.Item("ALAck").Value = Pm.GetBit(pMe.Item("W4").Value, 9)
+    pMe.Item("IA").Value = Pm.GetBit(pMe.Item("W4").Value, 10)
+    pMe.Item("FB1").Value = Pm.GetBit(pMe.Item("W4").Value, 11)
+    pMe.Item("InterlockOffCls").Value = Pm.GetBit(pMe.Item("W4").Value, 14)
+    pMe.Item("InterlockOnOpn").Value = Pm.GetBit(pMe.Item("W4").Value, 15)
+    pMe.Item("HMI_LOC").Value = Pm.GetBit(pMe.Item("W4").Value, 0)
+  case "Presel"
+    pMe.Item("W4").Bit(8) = pEvent.Item.Value
+  case "ALAck"
+    pMe.Item("W4").Bit(9) = pEvent.Item.Value
+  case "IA"
+    pMe.Item("W4").Bit(10) = pEvent.Item.Value
+  case "FB1"
+    pMe.Item("W4").Bit(11) = pEvent.Item.Value
+  case "InterlockOffCls"
+    pMe.Item("W4").Bit(14) = pEvent.Item.Value
+  case "InterlockOnOpn"
+    pMe.Item("W4").Bit(15) = pEvent.Item.Value
+  case "HMI_LOC"
+    pMe.Item("W4").Bit(0) = pEvent.Item.Value
+end select
+
+'********************************************************************************
+'ALARM MANAGEMENT
+'********************************************************************************
+
+'FBFault
+if pEvent.Item.Name = "FBFault" then
+    'Activate alarm
+    if pMe.Item("FBFault") then
+        Alarms.Item(pMe.Name & "_FBFault").Activate
+        pMe.Item("ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "FB Fault"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("FBFault") then
+        Alarms.Item(pMe.Name & "_FBFault").Inactivate
+    end if
+end if
+
+if pEvent.Item.Name = "ALAck" and not pMe.Item("ALAck") then
+    Alarms.Item(pMe.Name & "_FBFault").Acknowledge
+end if
+
+pMe.Item("AnyAl").Value = pMe.Item("FBFault")
+pMe.Item("AnyAck").Value = pMe.Item("ALAck")
+]]>
+</OnOffCtrlDataOnItemAfterWriteEvent>
+
+<OnOffCtrlDataVSDOnStartEvent>
+<![CDATA[
+'ALARMS REGISTRATION
+
+Alarms.RegisterNew pMe.Name & "_FBFaultCW" , "IO", pMe.Name, "Feedback fault CW"
+Alarms.RegisterNew pMe.Name & "_FBFaultCCW" , "IO", pMe.Name, "Feedback fault CCW"
+Alarms.RegisterNew pMe.Name & "_DriveFault" , "IO", pMe.Name, "Drive fault"
+]]>
+</OnOffCtrlDataVSDOnStartEvent>
+
+<OnOffCtrlDataVSDOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("Cmd0Int").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("Cmd1IntCW").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("Cmd1IntCCW").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("FB1CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("ICCW").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("IB1CW").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("IB2CW").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+    pMe.Item("IB4CW").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
+    pMe.Item("IB1CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
+    pMe.Item("IB2CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 2)
+    pMe.Item("IB3CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 3)
+    pMe.Item("IB4CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 4)
+    pMe.Item("IACW").Value = Pm.GetBit(pMe.Item("W1").Value, 5)
+    pMe.Item("IACCW").Value = Pm.GetBit(pMe.Item("W1").Value, 6)
+    pMe.Item("PDCW").Value = Pm.GetBit(pMe.Item("W1").Value, 7)
+  case "Cmd0Int"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "Cmd1IntCW"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "Cmd1IntCCW"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "FB1CCW"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "ICCW"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "IB1CW"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "IB2CW"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+  case "IB4CW"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "IB1CCW"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+  case "IB2CCW"
+    pMe.Item("W1").Bit(2) = pEvent.Item.Value
+  case "IB3CCW"
+    pMe.Item("W1").Bit(3) = pEvent.Item.Value
+  case "IB4CCW"
+    pMe.Item("W1").Bit(4) = pEvent.Item.Value
+  case "IACW"
+    pMe.Item("W1").Bit(5) = pEvent.Item.Value
+  case "IACCW"
+    pMe.Item("W1").Bit(6) = pEvent.Item.Value
+  case "PDCW"
+    pMe.Item("W1").Bit(7) = pEvent.Item.Value
+    
+    
+    
+    
+  'W2           'ZDE JSEM SKONCIL                                                                             'ZDE JSEM SKONCIL  
+  case "W2" 
+    pMe.Item("PDCCW").Value = Pm.GetBit(pMe.Item("W2").Value, 8)
+    pMe.Item("ME").Value = Pm.GetBit(pMe.Item("W2").Value, 9)
+    pMe.Item("Auto").Value = Pm.GetBit(pMe.Item("W2").Value, 10)
+    pMe.Item("Seq").Value = Pm.GetBit(pMe.Item("W2").Value, 11)
+    pMe.Item("Cen").Value = Pm.GetBit(pMe.Item("W2").Value, 12)
+    pMe.Item("Loc").Value = Pm.GetBit(pMe.Item("W2").Value, 13)
+    pMe.Item("HMI_OutOfSrv").Value = Pm.GetBit(pMe.Item("W2").Value, 14)
+    pMe.Item("RunCW").Value = Pm.GetBit(pMe.Item("W2").Value, 15)
+    pMe.Item("RunCCW").Value = Pm.GetBit(pMe.Item("W2").Value, 0)
+    pMe.Item("RFSCW").Value = Pm.GetBit(pMe.Item("W2").Value, 1)
+    pMe.Item("RFSCCW").Value = Pm.GetBit(pMe.Item("W2").Value, 2)
+    pMe.Item("FBFaultCW").Value = Pm.GetBit(pMe.Item("W2").Value, 6)
+    pMe.Item("FBFaultCCW").Value = Pm.GetBit(pMe.Item("W2").Value, 7)
+  case "PDCCW"
+    pMe.Item("W2").Bit(8) = pEvent.Item.Value
+  case "ME"
+    pMe.Item("W2").Bit(9) = pEvent.Item.Value
+  case "Auto"
+    pMe.Item("W2").Bit(10) = pEvent.Item.Value
+  case "Seq"
+    pMe.Item("W2").Bit(11) = pEvent.Item.Value
+  case "Cen"
+    pMe.Item("W2").Bit(12) = pEvent.Item.Value
+  case "Loc"
+    pMe.Item("W2").Bit(13) = pEvent.Item.Value
+  case "HMI_OutOfSrv"
+    pMe.Item("W2").Bit(14) = pEvent.Item.Value
+  case "RunCW"
+    pMe.Item("W2").Bit(15) = pEvent.Item.Value
+  case "RunCCW"
+    pMe.Item("W2").Bit(0) = pEvent.Item.Value
+  case "RFSCW"
+    pMe.Item("W2").Bit(1) = pEvent.Item.Value
+  case "RFSCCW"
+    pMe.Item("W2").Bit(2) = pEvent.Item.Value
+  case "FBFaultCW"
+    pMe.Item("W2").Bit(6) = pEvent.Item.Value
+  case "FBFaultCCW"
+    pMe.Item("W2").Bit(7) = pEvent.Item.Value
+    
+  'W3
+  case "W3" 
+    pMe.Item("HMI_CenSel").Value = Pm.GetBit(pMe.Item("W3").Value, 8)
+    pMe.Item("HMI_AutoSel").Value = Pm.GetBit(pMe.Item("W3").Value, 9)
+    pMe.Item("HMI_ManSel").Value = Pm.GetBit(pMe.Item("W3").Value, 10)
+    pMe.Item("HMI_IB1BlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 11)
+    pMe.Item("HMI_IB2BlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 12)
+    pMe.Item("HMI_IB3BlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 13)
+    pMe.Item("HMI_IB4BlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 14)
+    pMe.Item("HMI_PDBlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 0)
+    pMe.Item("HMI_IB1BlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 1)
+    pMe.Item("HMI_IB2BlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 2)
+    pMe.Item("HMI_IB3BlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 3)
+    pMe.Item("HMI_IB4BlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 4)
+    pMe.Item("HMI_IABlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 5)
+    pMe.Item("HMI_PDBlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 6)
+    pMe.Item("HMI_Sim").Value = Pm.GetBit(pMe.Item("W3").Value, 7)
+  case "HMI_CenSel"
+    pMe.Item("W3").Bit(8) = pEvent.Item.Value
+  case "HMI_AutoSel"
+    pMe.Item("W3").Bit(9) = pEvent.Item.Value
+  case "HMI_ManSel"
+    pMe.Item("W3").Bit(10) = pEvent.Item.Value
+  case "HMI_IB1BlockCW"
+    pMe.Item("W3").Bit(11) = pEvent.Item.Value
+  case "HMI_IB2BlockCW"
+    pMe.Item("W3").Bit(12) = pEvent.Item.Value
+  case "HMI_IB3BlockCW"
+    pMe.Item("W3").Bit(13) = pEvent.Item.Value
+  case "HMI_IB4BlockCW"
+    pMe.Item("W3").Bit(14) = pEvent.Item.Value
+  case "HMI_PDBlockCW"
+    pMe.Item("W3").Bit(0) = pEvent.Item.Value
+  case "HMI_IB1BlockCCW"
+    pMe.Item("W3").Bit(1) = pEvent.Item.Value
+  case "HMI_IB2BlockCCW"
+    pMe.Item("W3").Bit(2) = pEvent.Item.Value
+  case "HMI_IB3BlockCCW"
+    pMe.Item("W3").Bit(3) = pEvent.Item.Value
+  case "HMI_IB4BlockCCW"
+    pMe.Item("W3").Bit(4) = pEvent.Item.Value
+  case "HMI_IABlockCCW"
+    pMe.Item("W3").Bit(5) = pEvent.Item.Value
+  case "HMI_PDBlockCCW"
+    pMe.Item("W3").Bit(6) = pEvent.Item.Value
+  case "HMI_Sim"
+    pMe.Item("W3").Bit(7) = pEvent.Item.Value
+    
+  'W4
+  case "W4" 
+    pMe.Item("HMI_StartCW").Value = Pm.GetBit(pMe.Item("W4").Value, 8)
+    pMe.Item("HMI_StartCCW").Value = Pm.GetBit(pMe.Item("W4").Value, 9)
+    pMe.Item("Cmd1CCW").Value = Pm.GetBit(pMe.Item("W4").Value, 10)
+    pMe.Item("HMI_Stop").Value = Pm.GetBit(pMe.Item("W4").Value, 11)
+    pMe.Item("HMI_EnAuto").Value = Pm.GetBit(pMe.Item("W4").Value, 12)
+    pMe.Item("HMI_VSDReset").Value = Pm.GetBit(pMe.Item("W4").Value, 13)
+    pMe.Item("Cmd0").Value = Pm.GetBit(pMe.Item("W4").Value, 14)
+    pMe.Item("Cmd1CW").Value = Pm.GetBit(pMe.Item("W4").Value, 15)
+    pMe.Item("FBLoc").Value = Pm.GetBit(pMe.Item("W4").Value, 0)
+    pMe.Item("FB0").Value = Pm.GetBit(pMe.Item("W4").Value, 1)
+    pMe.Item("FB1CW").Value = Pm.GetBit(pMe.Item("W4").Value, 2)
+    pMe.Item("SetSeq").Value = Pm.GetBit(pMe.Item("W4").Value, 6)
+    pMe.Item("SeqStartCmd").Value = Pm.GetBit(pMe.Item("W4").Value, 7)
+  case "HMI_StartCW"
+    pMe.Item("W4").Bit(8) = pEvent.Item.Value
+  case "HMI_StartCCW"
+    pMe.Item("W4").Bit(9) = pEvent.Item.Value
+  case "Cmd1CCW"
+    pMe.Item("W4").Bit(10) = pEvent.Item.Value
+  case "HMI_Stop"
+    pMe.Item("W4").Bit(11) = pEvent.Item.Value
+  case "HMI_EnAuto"
+    pMe.Item("W4").Bit(12) = pEvent.Item.Value
+  case "HMI_VSDReset"
+    pMe.Item("W4").Bit(13) = pEvent.Item.Value
+  case "Cmd0"
+    pMe.Item("W4").Bit(14) = pEvent.Item.Value
+  case "Cmd1CW"
+    pMe.Item("W4").Bit(15) = pEvent.Item.Value
+  case "FBLoc"
+    pMe.Item("W4").Bit(0) = pEvent.Item.Value
+  case "FB0"
+    pMe.Item("W4").Bit(1) = pEvent.Item.Value
+  case "FB1CW"
+    pMe.Item("W4").Bit(2) = pEvent.Item.Value
+  case "SetSeq"
+    pMe.Item("W4").Bit(6) = pEvent.Item.Value
+  case "SeqStartCmd"
+    pMe.Item("W4").Bit(7) = pEvent.Item.Value
+    
+  'W5
+  case "W5" 
+    pMe.Item("SeqStopCmd").Value = Pm.GetBit(pMe.Item("W5").Value, 8)
+    pMe.Item("SetCen").Value = Pm.GetBit(pMe.Item("W5").Value, 9)
+    pMe.Item("SetAuto").Value = Pm.GetBit(pMe.Item("W5").Value, 10)
+    pMe.Item("SetMan").Value = Pm.GetBit(pMe.Item("W5").Value, 11)
+    pMe.Item("ALAck").Value = Pm.GetBit(pMe.Item("W5").Value, 14)
+    pMe.Item("HMI_IABlockCW").Value = Pm.GetBit(pMe.Item("W5").Value, 0)
+    pMe.Item("HMI_InSV").Value = Pm.GetBit(pMe.Item("W5").Value, 2)
+    pMe.Item("HMI_ExtSV").Value = Pm.GetBit(pMe.Item("W5").Value, 3)
+    pMe.Item("InSV").Value = Pm.GetBit(pMe.Item("W5").Value, 4)
+    pMe.Item("ExtSV").Value = Pm.GetBit(pMe.Item("W5").Value, 5)
+    pMe.Item("SetExtSV").Value = Pm.GetBit(pMe.Item("W5").Value, 6)
+    pMe.Item("SetInSV").Value = Pm.GetBit(pMe.Item("W5").Value, 7)
+  case "SeqStopCmd"
+    pMe.Item("W5").Bit(8) = pEvent.Item.Value
+  case "SetCen"
+    pMe.Item("W5").Bit(9) = pEvent.Item.Value
+  case "SetAuto"
+    pMe.Item("W5").Bit(10) = pEvent.Item.Value
+  case "SetMan"
+    pMe.Item("W5").Bit(11) = pEvent.Item.Value
+  case "ALAck"
+    pMe.Item("W5").Bit(14) = pEvent.Item.Value
+  case "HMI_IABlockCW"
+    pMe.Item("W5").Bit(0) = pEvent.Item.Value
+  case "HMI_InSV"
+    pMe.Item("W5").Bit(2) = pEvent.Item.Value
+  case "HMI_ExtSV"
+    pMe.Item("W5").Bit(3) = pEvent.Item.Value
+  case "InSV"
+    pMe.Item("W5").Bit(4) = pEvent.Item.Value
+  case "ExtSV"
+    pMe.Item("W5").Bit(5) = pEvent.Item.Value
+  case "SetExtSV"
+    pMe.Item("W5").Bit(6) = pEvent.Item.Value
+  case "SetInSV"
+    pMe.Item("W5").Bit(7) = pEvent.Item.Value
+    
+  'W6
+  case "W6" 
+    pMe.Item("IB3CW").Value = Pm.GetBit(pMe.Item("W6").Value, 8)
+    pMe.Item("HMI_LOC").Value = Pm.GetBit(pMe.Item("W6").Value, 9)
+    pMe.Item("ICCCW").Value = Pm.GetBit(pMe.Item("W6").Value, 10)
+  case "IB3CW"
+    pMe.Item("W6").Bit(8) = pEvent.Item.Value
+  case "HMI_LOC"
+    pMe.Item("W6").Bit(9) = pEvent.Item.Value
+  case "ICCCW"
+    pMe.Item("W6").Bit(10) = pEvent.Item.Value
+    
+  'W7
+  case "W7" 
+    pMe.Item("Comd").Value = Pm.GetBit(pMe.Item("W7").Value, 8)
+    pMe.Item("Dir").Value = Pm.GetBit(pMe.Item("W7").Value, 9)
+    pMe.Item("Reset").Value = Pm.GetBit(pMe.Item("W7").Value, 10)
+    pMe.Item("Interlock").Value = Pm.GetBit(pMe.Item("W7").Value, 11)
+    pMe.Item("Ready_to_start").Value = Pm.GetBit(pMe.Item("W7").Value, 12)
+    pMe.Item("FB").Value = Pm.GetBit(pMe.Item("W7").Value, 13)
+    pMe.Item("DirFB").Value = Pm.GetBit(pMe.Item("W7").Value, 14)
+    pMe.Item("DriveFault").Value = Pm.GetBit(pMe.Item("W7").Value, 15)
+    pMe.Item("DriveWar").Value = Pm.GetBit(pMe.Item("W7").Value, 0)
+    pMe.Item("DriveLoc").Value = Pm.GetBit(pMe.Item("W7").Value, 1)
+    pMe.Item("ComFault").Value = Pm.GetBit(pMe.Item("W7").Value, 2)
+  case "Comd"
+    pMe.Item("W7").Bit(8) = pEvent.Item.Value
+  case "Dir"
+    pMe.Item("W7").Bit(9) = pEvent.Item.Value
+  case "Reset"
+    pMe.Item("W7").Bit(10) = pEvent.Item.Value
+  case "Interlock"
+    pMe.Item("W7").Bit(11) = pEvent.Item.Value
+  case "Ready_to_start"
+    pMe.Item("W7").Bit(12) = pEvent.Item.Value
+  case "FB"
+    pMe.Item("W7").Bit(13) = pEvent.Item.Value
+  case "DirFB"
+    pMe.Item("W7").Bit(14) = pEvent.Item.Value
+  case "DriveFault"
+    pMe.Item("W7").Bit(15) = pEvent.Item.Value
+  case "DriveWar"
+    pMe.Item("W7").Bit(0) = pEvent.Item.Value
+  case "DriveLoc"
+    pMe.Item("W7").Bit(1) = pEvent.Item.Value
+  case "ComFault"
+    pMe.Item("W7").Bit(2) = pEvent.Item.Value
+end select
+
+'********************************************************************************
+'ALARM MANAGEMENT
+'********************************************************************************
+
+'FBFaultCW
+if pEvent.Item.Name = "FBFaultCW" then
+    'Activate alarm
+    if pMe.Item("FBFaultCW") then
+        Alarms.Item(pMe.Name & "_FBFaultCW").Activate
+        pMe.Item("ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "FB Fault CW"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("FBFaultCW") then
+        Alarms.Item(pMe.Name & "_FBFaultCW").Inactivate
+    end if
+end if
+
+'FBFaultCCW
+if pEvent.Item.Name = "FBFaultCCW" then
+    'Activate alarm
+    if pMe.Item("FBFaultCCW") then
+        Alarms.Item(pMe.Name & "_FBFaultCCW").Activate
+        pMe.Item("ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "FB Fault CCW"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("FBFaultCCW") then
+        Alarms.Item(pMe.Name & "_FBFaultCCW").Inactivate
+    end if
+end if
+
+'FBFaultStop
+if pEvent.Item.Name = "DriveFault" then
+    'Activate alarm
+    if pMe.Item("DriveFault") then
+        Alarms.Item(pMe.Name & "_DriveFault").Activate
+        pMe.Item("ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "FB Fault Stop"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("DriveFault") then
+        Alarms.Item(pMe.Name & "_DriveFault").Inactivate
+    end if
+end if
+
+'Acknowledge alarm common
+if pEvent.Item.Name = "ALAck" and not pMe.Item("ALAck") then
+    Alarms.Item(pMe.Name & "_FBFaultCW").Acknowledge
+    Alarms.Item(pMe.Name & "_FBFaultCCW").Acknowledge
+    Alarms.Item(pMe.Name & "_DriveFault").Acknowledge
+end if
+
+pMe.Item("AnyAl").Value = pMe.Item("FBFaultCW") or pMe.Item("FBFaultCCW") or pMe.Item("DriveFault")
+pMe.Item("AnyAck").Value = pMe.Item("ALAck")
+]]>
+</OnOffCtrlDataVSDOnItemAfterWriteEvent>
+
+<OnOffCtrlData2DOnStartEvent>
+<![CDATA[
+'ALARMS REGISTRATION
+
+Alarms.RegisterNew pMe.Name & "_FBFaultCW" , "IO", pMe.Name, "Feedback fault CW"
+Alarms.RegisterNew pMe.Name & "_FBFaultCCW" , "IO", pMe.Name, "Feedback fault CCW"
+Alarms.RegisterNew pMe.Name & "_FBFaultStop" , "IO", pMe.Name, "Feedback fault Stop"
+]]>
+</OnOffCtrlData2DOnStartEvent>
+
+<OnOffCtrlData2DOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("Cmd0Int").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("Cmd1IntCW").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("Cmd1IntCCW").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("ICCW").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("IB1CW").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("IB2CW").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("IB3CW").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+    pMe.Item("IB1CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
+    pMe.Item("IB2CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
+    pMe.Item("IB3CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 2)
+    pMe.Item("IB4CCW").Value = Pm.GetBit(pMe.Item("W1").Value, 3)
+    pMe.Item("IACW").Value = Pm.GetBit(pMe.Item("W1").Value, 4)
+    pMe.Item("IACCW").Value = Pm.GetBit(pMe.Item("W1").Value, 5)
+    pMe.Item("PDCW").Value = Pm.GetBit(pMe.Item("W1").Value, 6)
+    pMe.Item("PDCCW").Value = Pm.GetBit(pMe.Item("W1").Value, 7)
+  case "Cmd0Int"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "Cmd1IntCW"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "Cmd1IntCCW"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "ICCW"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "IB1CW"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "IB2CW"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "IB3CW"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+  case "IB1CCW"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "IB2CCW"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+  case "IB3CCW"
+    pMe.Item("W1").Bit(2) = pEvent.Item.Value
+  case "IB4CCW"
+    pMe.Item("W1").Bit(3) = pEvent.Item.Value
+  case "IACW"
+    pMe.Item("W1").Bit(4) = pEvent.Item.Value
+  case "IACCW"
+    pMe.Item("W1").Bit(5) = pEvent.Item.Value
+  case "PDCW"
+    pMe.Item("W1").Bit(6) = pEvent.Item.Value
+  case "PDCCW"
+    pMe.Item("W1").Bit(7) = pEvent.Item.Value
+    
+  'W2
+  case "W2" 
+    pMe.Item("ME").Value = Pm.GetBit(pMe.Item("W2").Value, 8)
+    pMe.Item("Auto").Value = Pm.GetBit(pMe.Item("W2").Value, 9)
+    pMe.Item("Seq").Value = Pm.GetBit(pMe.Item("W2").Value, 10)
+    pMe.Item("Cen").Value = Pm.GetBit(pMe.Item("W2").Value, 11)
+    pMe.Item("Loc").Value = Pm.GetBit(pMe.Item("W2").Value, 12)
+    pMe.Item("HMI_OutOfSrv").Value = Pm.GetBit(pMe.Item("W2").Value, 13)
+    pMe.Item("RunCW").Value = Pm.GetBit(pMe.Item("W2").Value, 14)
+    pMe.Item("RunCCW").Value = Pm.GetBit(pMe.Item("W2").Value, 15)
+    pMe.Item("RFSCW").Value = Pm.GetBit(pMe.Item("W2").Value, 0)
+    pMe.Item("RFSCCW").Value = Pm.GetBit(pMe.Item("W2").Value, 1)
+    pMe.Item("FBFaultCW").Value = Pm.GetBit(pMe.Item("W2").Value, 6)
+    pMe.Item("FBFaultCCW").Value = Pm.GetBit(pMe.Item("W2").Value, 7)
+  case "ME"
+    pMe.Item("W2").Bit(8) = pEvent.Item.Value
+  case "Auto"
+    pMe.Item("W2").Bit(9) = pEvent.Item.Value
+  case "Seq"
+    pMe.Item("W2").Bit(10) = pEvent.Item.Value
+  case "Cen"
+    pMe.Item("W2").Bit(11) = pEvent.Item.Value
+  case "Loc"
+    pMe.Item("W2").Bit(12) = pEvent.Item.Value
+  case "HMI_OutOfSrv"
+    pMe.Item("W2").Bit(13) = pEvent.Item.Value
+  case "RunCW"
+    pMe.Item("W2").Bit(14) = pEvent.Item.Value
+  case "RunCCW"
+    pMe.Item("W2").Bit(15) = pEvent.Item.Value
+  case "RFSCW"
+    pMe.Item("W2").Bit(0) = pEvent.Item.Value
+  case "RFSCCW"
+    pMe.Item("W2").Bit(1) = pEvent.Item.Value
+  case "FBFaultCW"
+    pMe.Item("W2").Bit(6) = pEvent.Item.Value
+  case "FBFaultCCW"
+    pMe.Item("W2").Bit(7) = pEvent.Item.Value
+    
+  'W3
+  case "W3" 
+    pMe.Item("FBFaultStop").Value = Pm.GetBit(pMe.Item("W3").Value, 8)
+    pMe.Item("HMI_CenSel").Value = Pm.GetBit(pMe.Item("W3").Value, 9)
+    pMe.Item("HMI_AutoSel").Value = Pm.GetBit(pMe.Item("W3").Value, 10)
+    pMe.Item("HMI_ManSel").Value = Pm.GetBit(pMe.Item("W3").Value, 11)
+    pMe.Item("HMI_IB1BlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 12)
+    pMe.Item("HMI_IB2BlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 13)
+    pMe.Item("HMI_IB3BlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 14)
+    pMe.Item("HMI_IABlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 0)
+    pMe.Item("HMI_PDBlockCW").Value = Pm.GetBit(pMe.Item("W3").Value, 1)
+    pMe.Item("HMI_IB1BlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 2)
+    pMe.Item("HMI_IB2BlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 3)
+    pMe.Item("HMI_IB3BlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 4)
+    pMe.Item("HMI_IB4BlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 5)
+    pMe.Item("HMI_IABlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 6)
+    pMe.Item("HMI_PDBlockCCW").Value = Pm.GetBit(pMe.Item("W3").Value, 7)
+  case "FBFaultStop"
+    pMe.Item("W3").Bit(8) = pEvent.Item.Value
+  case "HMI_CenSel"
+    pMe.Item("W3").Bit(9) = pEvent.Item.Value
+  case "HMI_AutoSel"
+    pMe.Item("W3").Bit(10) = pEvent.Item.Value
+  case "HMI_ManSel"
+    pMe.Item("W3").Bit(11) = pEvent.Item.Value
+  case "HMI_IB1BlockCW"
+    pMe.Item("W3").Bit(12) = pEvent.Item.Value
+  case "HMI_IB2BlockCW"
+    pMe.Item("W3").Bit(13) = pEvent.Item.Value
+  case "HMI_IB3BlockCW"
+    pMe.Item("W3").Bit(14) = pEvent.Item.Value
+  case "HMI_IABlockCW"
+    pMe.Item("W3").Bit(0) = pEvent.Item.Value
+  case "HMI_PDBlockCW"
+    pMe.Item("W3").Bit(1) = pEvent.Item.Value
+  case "HMI_IB1BlockCCW"
+    pMe.Item("W3").Bit(2) = pEvent.Item.Value
+  case "HMI_IB2BlockCCW"
+    pMe.Item("W3").Bit(3) = pEvent.Item.Value
+  case "HMI_IB3BlockCCW"
+    pMe.Item("W3").Bit(4) = pEvent.Item.Value
+  case "HMI_IB4BlockCCW"
+    pMe.Item("W3").Bit(5) = pEvent.Item.Value
+  case "HMI_IABlockCCW"
+    pMe.Item("W3").Bit(6) = pEvent.Item.Value
+  case "HMI_PDBlockCCW"
+    pMe.Item("W3").Bit(7) = pEvent.Item.Value
+    
+  'W4
+  case "W4" 
+    pMe.Item("HMI_Sim").Value = Pm.GetBit(pMe.Item("W4").Value, 8)
+    pMe.Item("HMI_StartCW").Value = Pm.GetBit(pMe.Item("W4").Value, 9)
+    pMe.Item("HMI_StartCCW").Value = Pm.GetBit(pMe.Item("W4").Value, 10)
+    pMe.Item("HMI_Stop").Value = Pm.GetBit(pMe.Item("W4").Value, 11)
+    pMe.Item("HMI_EnAuto").Value = Pm.GetBit(pMe.Item("W4").Value, 12)
+    pMe.Item("Cmd0").Value = Pm.GetBit(pMe.Item("W4").Value, 13)
+    pMe.Item("Cmd1CW").Value = Pm.GetBit(pMe.Item("W4").Value, 14)
+    pMe.Item("Cmd1CCW").Value = Pm.GetBit(pMe.Item("W4").Value, 15)
+    pMe.Item("FBLoc").Value = Pm.GetBit(pMe.Item("W4").Value, 3)
+    pMe.Item("FB0").Value = Pm.GetBit(pMe.Item("W4").Value, 4)
+    pMe.Item("FB1CW").Value = Pm.GetBit(pMe.Item("W4").Value, 5)
+    pMe.Item("FB1CCW").Value = Pm.GetBit(pMe.Item("W4").Value, 6)
+  case "HMI_Sim"
+    pMe.Item("W4").Bit(8) = pEvent.Item.Value
+  case "HMI_StartCW"
+    pMe.Item("W4").Bit(9) = pEvent.Item.Value
+  case "HMI_StartCCW"
+    pMe.Item("W4").Bit(10) = pEvent.Item.Value
+  case "HMI_Stop"
+    pMe.Item("W4").Bit(11) = pEvent.Item.Value
+  case "HMI_EnAuto"
+    pMe.Item("W4").Bit(12) = pEvent.Item.Value
+  case "Cmd0"
+    pMe.Item("W4").Bit(13) = pEvent.Item.Value
+  case "Cmd1CW"
+    pMe.Item("W4").Bit(14) = pEvent.Item.Value
+  case "Cmd1CCW"
+    pMe.Item("W4").Bit(15) = pEvent.Item.Value
+  case "FBLoc"
+    pMe.Item("W4").Bit(3) = pEvent.Item.Value
+  case "FB0"
+    pMe.Item("W4").Bit(4) = pEvent.Item.Value
+  case "FB1CW"
+    pMe.Item("W4").Bit(5) = pEvent.Item.Value
+  case "FB1CCW"
+    pMe.Item("W4").Bit(6) = pEvent.Item.Value
+    
+  'W5
+  case "W5" 
+    pMe.Item("SetSeq").Value = Pm.GetBit(pMe.Item("W5").Value, 10)
+    pMe.Item("SeqStartCmd").Value = Pm.GetBit(pMe.Item("W5").Value, 11)
+    pMe.Item("SeqStopCmd").Value = Pm.GetBit(pMe.Item("W5").Value, 12)
+    pMe.Item("SetCen").Value = Pm.GetBit(pMe.Item("W5").Value, 13)
+    pMe.Item("SetAuto").Value = Pm.GetBit(pMe.Item("W5").Value, 14)
+    pMe.Item("ALAck").Value = Pm.GetBit(pMe.Item("W5").Value, 2)
+    pMe.Item("IB4CW").Value = Pm.GetBit(pMe.Item("W5").Value, 3)
+    pMe.Item("HMI_IB4BlockCW").Value = Pm.GetBit(pMe.Item("W5").Value, 4)
+    pMe.Item("HMI_LOC").Value = Pm.GetBit(pMe.Item("W5").Value, 6)
+    pMe.Item("ICCCW").Value = Pm.GetBit(pMe.Item("W5").Value, 7)
+  case "SetSeq"
+    pMe.Item("W5").Bit(10) = pEvent.Item.Value
+  case "SeqStartCmd"
+    pMe.Item("W5").Bit(11) = pEvent.Item.Value
+  case "SeqStopCmd"
+    pMe.Item("W5").Bit(12) = pEvent.Item.Value
+  case "SetCen"
+    pMe.Item("W5").Bit(13) = pEvent.Item.Value
+  case "SetAuto"
+    pMe.Item("W5").Bit(14) = pEvent.Item.Value
+  case "ALAck"
+    pMe.Item("W5").Bit(2) = pEvent.Item.Value
+  case "IB4CW"
+    pMe.Item("W5").Bit(3) = pEvent.Item.Value
+  case "HMI_IB4BlockCW"
+    pMe.Item("W5").Bit(4) = pEvent.Item.Value
+  case "HMI_LOC"
+    pMe.Item("W5").Bit(6) = pEvent.Item.Value
+  case "ICCCW"
+    pMe.Item("W5").Bit(7) = pEvent.Item.Value
+
+end select
+
+'********************************************************************************
+'ALARM MANAGEMENT
+'********************************************************************************
+
+'FBFaultCW
+if pEvent.Item.Name = "FBFaultCW" then
+    'Activate alarm
+    if pMe.Item("FBFaultCW") then
+        Alarms.Item(pMe.Name & "_FBFaultCW").Activate
+        pMe.Item("ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "FB Fault CW"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("FBFaultCW") then
+        Alarms.Item(pMe.Name & "_FBFaultCW").Inactivate
+    end if
+end if
+
+'FBFaultCCW
+if pEvent.Item.Name = "FBFaultCCW" then
+    'Activate alarm
+    if pMe.Item("FBFaultCCW") then
+        Alarms.Item(pMe.Name & "_FBFaultCCW").Activate
+        pMe.Item("ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "FB Fault CCW"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("FBFaultCCW") then
+        Alarms.Item(pMe.Name & "_FBFaultCCW").Inactivate
+    end if
+end if
+
+'FBFaultStop
+if pEvent.Item.Name = "FBFaultStop" then
+    'Activate alarm
+    if pMe.Item("FBFaultStop") then
+        Alarms.Item(pMe.Name & "_FBFaultStop").Activate
+        pMe.Item("ALAck").Value = true
+        Events.ActivateNew pMe.Name & "_ev" , "event0", pMe.Name, "FB Fault Stop"
+    end if
+    'Inactivate alarm
+    if not pMe.Item("FBFaultStop") then
+        Alarms.Item(pMe.Name & "_FBFaultStop").Inactivate
+    end if
+end if
+
+'Acknowledge alarm common
+if pEvent.Item.Name = "ALAck" and not pMe.Item("ALAck") then
+    Alarms.Item(pMe.Name & "_FBFaultCW").Acknowledge
+    Alarms.Item(pMe.Name & "_FBFaultCCW").Acknowledge
+    Alarms.Item(pMe.Name & "_FBFaultStop").Acknowledge
+end if
+
+pMe.Item("AnyAl").Value = pMe.Item("FBFaultCW") or pMe.Item("FBFaultCCW") or pMe.Item("FBFaultStop")
+pMe.Item("AnyAck").Value = pMe.Item("ALAck")
+]]>
+</OnOffCtrlData2DOnItemAfterWriteEvent>
+
+<PIDCtrlDataOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("OUT_Seq").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("OUT_Cen").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("OUT_E1").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("OUT_E2").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("OUT_Track").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("OUT_Auto").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("OUT_Man").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+    pMe.Item("HMI_ManSel").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
+    pMe.Item("HMI_E1Sel").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
+    pMe.Item("HMI_E2Sel").Value = Pm.GetBit(pMe.Item("W1").Value, 2)
+    pMe.Item("HMI_Track").Value = Pm.GetBit(pMe.Item("W1").Value, 3)
+    pMe.Item("HMI_CenSel").Value = Pm.GetBit(pMe.Item("W1").Value, 4)
+    pMe.Item("HMI_AutoSel").Value = Pm.GetBit(pMe.Item("W1").Value, 5)
+    pMe.Item("HMI_Sim").Value = Pm.GetBit(pMe.Item("W1").Value, 6)
+    pMe.Item("HMI_Dir").Value = Pm.GetBit(pMe.Item("W1").Value, 7)
+  case "OUT_Seq"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "OUT_Cen"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "OUT_E1"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "OUT_E2"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "OUT_Track"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "OUT_Auto"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "OUT_Man"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+  case "HMI_ManSel"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "HMI_E1Sel"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+  case "HMI_E2Sel"
+    pMe.Item("W1").Bit(2) = pEvent.Item.Value
+  case "HMI_Track"
+    pMe.Item("W1").Bit(3) = pEvent.Item.Value
+  case "HMI_CenSel"
+    pMe.Item("W1").Bit(4) = pEvent.Item.Value
+  case "HMI_AutoSel"
+    pMe.Item("W1").Bit(5) = pEvent.Item.Value
+  case "HMI_Sim"
+    pMe.Item("W1").Bit(6) = pEvent.Item.Value
+  case "HMI_Dir"
+    pMe.Item("W1").Bit(7) = pEvent.Item.Value
+  'W2
+  case "W2" 
+    pMe.Item("HMI_Apply").Value = Pm.GetBit(pMe.Item("W2").Value, 8)
+  case "HMI_Apply"
+    pMe.Item("W2").Bit(8) = pEvent.Item.Value
+end select
+
+'********************************************************************************
+'TREND MANAGEMENT
+'********************************************************************************
+
+'Min
+if pEvent.Item.Name = "Min" then
+    pMe.Item("ActSP").Extension("trend").Min = pMe.Item("Min").Value
+    pMe.Item("ActPV").Extension("trend").Min = pMe.Item("Min").Value
+end if
+
+'Max
+if pEvent.Item.Name = "Max" then
+    pMe.Item("ActSP").Extension("trend").Max = pMe.Item("Max").Value
+    pMe.Item("ActPV").Extension("trend").Max = pMe.Item("Max").Value
+end if
+
+'HMI Min
+if pEvent.Item.Name = "HMI_PIDOutMin" then
+    pMe.Item("ValueOut").Extension("trend").Min = pMe.Item("HMI_PIDOutMin").Value
+end if
+
+'HMI Max
+if pEvent.Item.Name = "HMI_PIDOutMax" then
+    pMe.Item("ValueOut").Extension("trend").Max = pMe.Item("HMI_PIDOutMax").Value
+end if
+]]>
+</PIDCtrlDataOnItemAfterWriteEvent>
+
+</Root>
+
+
+
