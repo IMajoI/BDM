@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -87,10 +89,10 @@ namespace BDM_Form
 
             UsersList.Props.Add(UserProps("$NOUSER_LOCAL", UserType.Local, null, 0, null, false, "asdf"));
             UsersList.Props.Add(UserProps("$NOUSER_NET", UserType.Net, null, 0, null, false, "asdf"));
-            UsersList.Props.Add(UserProps("USER_ADMIN", UserType.LocalNet, "$ADMIN, $OPER,ELECT,ENGI", 3, "ADMIN", true, ""));
+            UsersList.Props.Add(UserProps("USER_ADMIN", UserType.LocalNet, "$ADMIN, $OPER,ELECT,ENGI", 3, "ADMIN", true, "sivres"));
             UsersList.Props.Add(UserProps("USER_OPER", UserType.LocalNet, "$OPER", 0, "OPER", false, ""));
-            UsersList.Props.Add(UserProps("USER_ELECT", UserType.LocalNet, "$OPER,ELECT,ENGI", 2, "ELECT", true, ""));
-            UsersList.Props.Add(UserProps("USER_ENGI", UserType.LocalNet, "$OPER,ENGI", 1, "ENGI", true, ""));
+            UsersList.Props.Add(UserProps("USER_ELECT", UserType.LocalNet, "$OPER,ELECT,ENGI", 2, "ELECT", true, "el"));
+            UsersList.Props.Add(UserProps("USER_ENGI", UserType.LocalNet, "$OPER,ENGI", 1, "ENGI", true, "en"));
             //here can be added more users if needed
 
             PromoticClass.PropsClass AccessList = new PromoticClass.PropsClass();
@@ -165,12 +167,10 @@ namespace BDM_Form
             appCoreFolder.PmObject.Add(OnOff2D_PmFolder(data.Objects.Where(x => x.DataType == Resource.OnOff2DType).ToList()));
             appCoreFolder.PmObject.Add(OnOffVSD_PmFolder(data.Objects.Where(x => x.DataType == Resource.OnOffVSDType).ToList()));
             appCoreFolder.PmObject.Add(PID_PmFolder(data.Objects.Where(x => x.DataType == Resource.PIDType).ToList()));
+            appCoreFolder.PmObject.Add(PIDStep_PmFolder(data.Objects.Where(x => x.DataType == Resource.PIDStepType).ToList()));
             appCoreFolder.PmObject.Add(Presel_PmFolder(data.Objects.Where(x => x.DataType == Resource.PreselType).ToList()));
 
             UpdateStatus(85, "Alarms, Trends, etc..");  //update progress status and message
-
-            //PmTimer - AlarmTimer
-            appCoreFolder.PmObject.Add(PmTimerObj("AlarmTimer", Script(@"\Scripts\CommonScripts.xml", "AlarmTimer")));
 
             //PmData - AlarmStripes
             appCoreFolder.PmObject.Add(AlarmStripes_PmData());
@@ -184,11 +184,12 @@ namespace BDM_Form
             //PmTrend - Trends
 
             //check if any trendability objects, if not, do not create trend object
-            var match = data.Objects.Where(obj => (obj.DataType == "AinData") || 
-                                                  (obj.DataType == "AnalogPosCtrlData") || 
-                                                  (obj.DataType == "AoutData") || 
-                                                  (obj.DataType == "PIDCtrlData") || 
-                                                  (obj.DataType == "OnOffCtrlData_VSD"));
+            var match = data.Objects.Where(obj => (obj.DataType == Resource.AinType) || obj.DataType == Resource.F_AinType ||
+                                                  (obj.DataType == Resource.AnalogPosType) ||
+                                                  (obj.DataType == Resource.AoutType) ||
+                                                  (obj.DataType == Resource.PIDType) ||
+                                                  (obj.DataType == Resource.PIDStepType) ||
+                                                  (obj.DataType == Resource.OnOffVSDType));
 
             if (match.Any())
                 appCoreFolder.PmObject.Add(Trends_PmTrend());
@@ -199,11 +200,14 @@ namespace BDM_Form
             //PmAlarmEvent - Alarms
             appCoreFolder.PmObject.Add(Alarms_PmAlarmEvent(data));
 
+            //PmData - SaveSettings
+            appCoreFolder.PmObject.Add(SaveSettings_PmData(data));
+
             //PmWeb - Web
             appCoreFolder.PmObject.Add(Web_PmWeb());
 
             //PmWorkspace - Workspace
-            appCoreFolder.PmObject.Add(Workspace_PmWorkspace());
+            //appCoreFolder.PmObject.Add(Workspace_PmWorkspace());
 
             //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             //Objects in Z45AppCore folder
@@ -229,43 +233,14 @@ namespace BDM_Form
                 serializer.Serialize(writer, xmlDoc);
             }
 
+            //add faceplates
             UpdateStatus(95, "Importing Faceplates");   //update progress status
+            AddXML(@"\Promotic\Scripts\Faceplates.xml", filePath, "Z45_Graphics");
 
-            //load faceplate node from Scripts
-            string path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
-            path = path.Substring(6) + @"\Promotic\Scripts\Faceplates.xml";
+            //add workspace
+            UpdateStatus(95, "Importing Workspace");   //update progress status
+            AddXML(@"\Promotic\Scripts\Workspace.xml", filePath, "Events");
 
-            XmlDocument xmlDocFP = new XmlDocument();
-            xmlDocFP.Load(path);
-
-            //XmlDocument -> XDocument
-            XDocument xDocFP = XDocument.Load(new XmlNodeReader(xmlDocFP));
-
-            //get root node
-            XElement xDocFPRoot = xDocFP.Root;
-
-            //load final xml file
-            XmlDocument xmlDocFinal = new XmlDocument();
-            xmlDocFinal.Load(filePath);
-
-            //XmlDocument -> XDocument
-            XDocument xDocFinal = XDocument.Load(new XmlNodeReader(xmlDocFinal));
-
-            //get child to copy after faceplates
-            XElement xDocFinalNode = xDocFinal.Root.Descendants("PmObject").First(el => (string)el.Attribute("Name") == "Z45_Graphics");
-
-            //append node
-            xDocFinalNode.AddAfterSelf(xDocFPRoot);
-
-            //XDocument -> XmlDocument
-            var xmlDocument = new XmlDocument();
-            using (var xmlReader = xDocFinal.CreateReader())
-            {
-                xmlDocument.Load(xmlReader);
-            }
-
-            //save xml
-            xmlDocument.Save(filePath);
 
 
             //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -305,7 +280,7 @@ namespace BDM_Form
 
             //Folders
             //appCoreFolder.PmObject.Add(PmFolderObj("Z45_Faceplates"));
-            appCoreFolder.PmObject.Add(Z45_Graphics_PmFolder());
+            //appCoreFolder.PmObject.Add(Z45_Graphics_PmFolder());
 
             //PmData - tags
             appCoreFolder.PmObject.Add(Ain_PmFolder(data.Objects.Where(x => x.DataType == Resource.AinType).ToList()));
@@ -317,13 +292,11 @@ namespace BDM_Form
             appCoreFolder.PmObject.Add(OnOff_PmFolder(data.Objects.Where(x => x.DataType == Resource.OnOffType).ToList()));
             appCoreFolder.PmObject.Add(OnOff2D_PmFolder(data.Objects.Where(x => x.DataType == Resource.OnOff2DType).ToList()));
             appCoreFolder.PmObject.Add(OnOffVSD_PmFolder(data.Objects.Where(x => x.DataType == Resource.OnOffVSDType).ToList()));
+            appCoreFolder.PmObject.Add(PIDStep_PmFolder(data.Objects.Where(x => x.DataType == Resource.PIDStepType).ToList()));
             appCoreFolder.PmObject.Add(PID_PmFolder(data.Objects.Where(x => x.DataType == Resource.PIDType).ToList()));
             appCoreFolder.PmObject.Add(Presel_PmFolder(data.Objects.Where(x => x.DataType == Resource.PreselType).ToList()));
 
             UpdateStatus(85, "Alarms, Trends, etc..");
-
-            //PmTimer - AlarmTimer
-            appCoreFolder.PmObject.Add(PmTimerObj("AlarmTimer", Script(@"\Scripts\CommonScripts.xml", "AlarmTimer")));
 
             //PmData - AlarmStripes
             appCoreFolder.PmObject.Add(AlarmStripes_PmData());
@@ -337,11 +310,12 @@ namespace BDM_Form
             //PmTrend - Trends
 
             //check if any trendability objects
-            var match = data.Objects.Where(obj => (obj.DataType == "AinData") ||
-                                                  (obj.DataType == "AnalogPosCtrlData") ||
-                                                  (obj.DataType == "AoutData") ||
-                                                  (obj.DataType == "PIDCtrlData") ||
-                                                  (obj.DataType == "OnOffCtrlData_VSD"));
+            var match = data.Objects.Where(obj => (obj.DataType == Resource.AinType) || obj.DataType == Resource.F_AinType ||
+                                                  (obj.DataType == Resource.AnalogPosType) ||
+                                                  (obj.DataType == Resource.AoutType) ||
+                                                  (obj.DataType == Resource.PIDType) ||
+                                                  (obj.DataType == Resource.PIDStepType) ||
+                                                  (obj.DataType == Resource.OnOffVSDType));
 
             if (match.Any())
                 appCoreFolder.PmObject.Add(Trends_PmTrend());
@@ -352,11 +326,14 @@ namespace BDM_Form
             //PmAlarmEvent - Alarms
             appCoreFolder.PmObject.Add(Alarms_PmAlarmEvent(data));
 
+            //PmData - SaveSettings
+            appCoreFolder.PmObject.Add(SaveSettings_PmData(data));
+
             //PmWeb - Web
             appCoreFolder.PmObject.Add(Web_PmWeb());
 
             //PmWorkspace - Workspace
-            appCoreFolder.PmObject.Add(Workspace_PmWorkspace());
+            //appCoreFolder.PmObject.Add(Workspace_PmWorkspace());
 
             //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             //Objects in Z45AppCore folder
@@ -382,43 +359,17 @@ namespace BDM_Form
                 serializer.Serialize(writer, xmlDoc);
             }
 
-            UpdateStatus(95, "Importing Faceplates..");
+            //add faceplates
+            UpdateStatus(95, "Importing Faceplates");   //update progress status
+            AddXML(@"\Promotic\Scripts\Faceplates.xml", filePath, "AlarmStripes");
 
-            //load faceplate node from Scripts
-            string path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
-            path = path.Substring(6) + @"\Promotic\Scripts\Faceplates.xml";
+            //add workspace
+            UpdateStatus(95, "Importing Workspace");   //update progress status
+            AddXML(@"\Promotic\Scripts\Workspace.xml", filePath, "Events");
 
-            XmlDocument xmlDocFP = new XmlDocument();
-            xmlDocFP.Load(path);
-
-            //XmlDocument -> XDocument
-            XDocument xDocFP = XDocument.Load(new XmlNodeReader(xmlDocFP));
-
-            //get root node
-            XElement xDocFPRoot = xDocFP.Root;
-
-            //load final xml file
-            XmlDocument xmlDocFinal = new XmlDocument();
-            xmlDocFinal.Load(filePath);
-
-            //XmlDocument -> XDocument
-            XDocument xDocFinal = XDocument.Load(new XmlNodeReader(xmlDocFinal));
-
-            //get child to copy after faceplates
-            XElement xDocFinalNode = xDocFinal.Root.Descendants("PmObject").First(el => (string)el.Attribute("Name") == "Z45_Graphics");
-
-            //append node
-            xDocFinalNode.AddAfterSelf(xDocFPRoot);
-
-            //XDocument -> XmlDocument
-            var xmlDocument = new XmlDocument();
-            using (var xmlReader = xDocFinal.CreateReader())
-            {
-                xmlDocument.Load(xmlReader);
-            }
-
-            //save xml
-            xmlDocument.Save(filePath);
+            //add workspace
+            UpdateStatus(99, "Importing Graphics");   //update progress status
+            AddXML(@"\Promotic\Scripts\Graphics.xml", filePath, "AlarmStripes");
 
             UpdateStatus(100, "Complete..");
 
@@ -476,9 +427,248 @@ namespace BDM_Form
             UpdateStatus(100, "Complete");
         }
 
+        /// <summary>
+        /// Calculate alarm stripes for single panel
+        /// </summary>
+        public static void CalcAlarmStripes()
+        {
+            List<TagList> alarmList = new List<TagList>();
+
+            var loadedXML = OpenXml();
+            //loadedXML.Load(@"Z45_Panels.xml");
+
+            XDocument xDoc = XDocument.Parse(loadedXML.OuterXml);
+
+            AlarmStripesData asData = new AlarmStripesData();
+            asData.Panel = new List<AlarmStripePanel>();
+
+            foreach (XElement n in xDoc.Descendants().Where(node => (string)node.Attribute("Type") == "PmPanel"))
+            {
+                AlarmStripePanel panel = new AlarmStripePanel();
+                panel.Tag = new List<string>();
+                panel.Name = n.Attribute("Name").Value;
+                asData.Panel.Add(panel);
+
+                foreach (XElement nn in n.Descendants().Where(node => (string)node.Attribute("Name") == "tagName"))
+                {
+
+                    try
+                    {
+                        string tagname = nn.Value;
+                        string path = nn.Parent.Parent.Descendants().FirstOrDefault(node => node.Value.Contains("AnyAl") && (string)node.Attribute("Name") == "Value").Value;
+
+                        panel.Tag.Add(path.Substring(path.IndexOf("Z45AppCore", 0) + 11).Substring(0, path.Substring(path.IndexOf("Z45AppCore", 0) + 11).IndexOf("\"")) + tagname);
+                    }
+                    catch { }
+
+                }
+            }
+
+            //Build script data
+            string atScript = "Generated: " + DateTime.Now.ToString("\"dd.MM.yyyy - HH:mm:ss\"") + Environment.NewLine;
+
+
+            foreach (AlarmStripePanel panel in asData.Panel)
+            {
+                atScript += "'" + panel.Name + Environment.NewLine;
+                atScript += "AlarmStripes.Methods.SetAlarm " + GetAlarmStripeLetter(panel.Name) + "false";
+
+                foreach (string tag in panel.Tag)
+                {
+                    atScript += " or pMe.Pm(\"/Z45AppCore/" + tag + "/#vars/AnyAl\")";
+                }
+
+                atScript += ", false";
+
+                foreach (string tag in panel.Tag)
+                {
+                    atScript += " or pMe.Pm(\"/Z45AppCore/" + tag + "/#vars/AnyAck\")";
+                }
+
+                atScript += Environment.NewLine + Environment.NewLine;
+            }
+
+            string cData = xDoc.Descendants().FirstOrDefault(node => (string)node.Attribute("Name") == "AlarmTimer")
+                .Descendants().FirstOrDefault(node => (string)node.Attribute("Name") == "onTick")
+                .Descendants().FirstOrDefault(node => node.Name == "Script").Value;
+
+            atScript = cData + atScript;
+                
+            xDoc.Descendants().FirstOrDefault(node => (string)node.Attribute("Name") == "AlarmTimer")
+                .Descendants().FirstOrDefault(node => (string)node.Attribute("Name") == "onTick")
+                .Descendants().FirstOrDefault(node => node.Name == "Script").ReplaceNodes(new XCData(atScript));
+
+            //Save xml
+            SaveFileDialog savefile = new SaveFileDialog();
+            savefile.FileName = "unknown.xml";
+            savefile.Filter = "XML Files|*.xml";
+
+            if (savefile.ShowDialog() == DialogResult.OK)
+            {
+                xDoc.Save(savefile.FileName);
+            }
+        }
+
+        /// <summary>
+        /// Calculate alarm stripes script of panels
+        /// </summary>
+        public static void CalcAlarmStripeSingle()
+        {
+            List<TagList> alarmList = new List<TagList>();
+
+            var loadedXML = OpenXml();
+            //loadedXML.Load(@"Z45_Panels.xml");
+
+            XDocument xDoc = XDocument.Parse(loadedXML.OuterXml);
+
+            AlarmStripesData asData = new AlarmStripesData();
+            asData.Panel = new List<AlarmStripePanel>();
+
+            foreach (XElement n in xDoc.Descendants().Where(node => (string)node.Attribute("Type") == "PmPanel"))
+            {
+                AlarmStripePanel panel = new AlarmStripePanel();
+                panel.Tag = new List<string>();
+                panel.Name = n.Attribute("Name").Value;
+                asData.Panel.Add(panel);
+
+                foreach (XElement nn in n.Descendants().Where(node => (string)node.Attribute("Name") == "tagName"))
+                {
+
+                    try
+                    {
+                        string tagname = nn.Value;
+                        string path = nn.Parent.Parent.Descendants().FirstOrDefault(node => node.Value.Contains("AnyAl") && (string)node.Attribute("Name") == "Value").Value;
+
+                        panel.Tag.Add(path.Substring(path.IndexOf("Z45AppCore", 0) + 11).Substring(0, path.Substring(path.IndexOf("Z45AppCore", 0) + 11).IndexOf("\"")) + tagname);
+                    }
+                    catch { }
+                    
+                }
+            }
+
+            //Build script data
+            string atScript = "";
+            
+
+            foreach (AlarmStripePanel panel in asData.Panel)
+            {
+                atScript += "'" + panel.Name + Environment.NewLine;
+                atScript += "AlarmStripes.Methods.SetAlarm " + GetAlarmStripeLetter(panel.Name) + "false";
+
+                foreach (string tag in panel.Tag)
+                {
+                    atScript += " or pMe.Pm(\"/Z45AppCore/" + tag + "/#vars/AnyAl\")";
+                }
+
+                atScript += ", false";
+
+                foreach (string tag in panel.Tag)
+                {
+                    atScript += " or pMe.Pm(\"/Z45AppCore/" + tag + "/#vars/AnyAck\")";
+                }
+
+                atScript += Environment.NewLine+ Environment.NewLine;
+            }
+
+            //Save txt
+            SaveFileDialog savefile = new SaveFileDialog();
+            savefile.FileName = "unknown.txt";
+            savefile.Filter = "Text Files|*.txt";
+
+            if (savefile.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllText(savefile.FileName, atScript);
+            }
+        }
+
+        private static string GetAlarmStripeLetter(string panelName)
+        {
+            string stripeLetter = "";
+            string stripeNumber = "";
+
+            string c = panelName.Substring(0, 1);
+            int n = 0;
+            Int32.TryParse(panelName.Substring(1, 1), out n);
+
+            if (n == 0)
+            {
+                stripeLetter = "\"Menu\"";
+
+                if (c == "A")
+                    stripeNumber = "1";
+                if (c == "B")
+                    stripeNumber = "2";
+                if (c == "C")
+                    stripeNumber = "3";
+                if (c == "D")
+                    stripeNumber = "4";
+                if (c == "E")
+                    stripeNumber = "5";
+                if (c == "F")
+                    stripeNumber = "6";
+                if (c == "G")
+                    stripeNumber = "7";
+                if (c == "H")
+                    stripeNumber = "8";
+                if (c == "I")
+                    stripeNumber = "9";
+                if (c == "J")
+                    stripeNumber = "10";
+            }
+                
+
+                
+            else
+            {
+                stripeLetter = "\""+c+"\"";
+                stripeNumber = n.ToString();
+            }
+
+            return stripeLetter + ", "+stripeNumber+", ";
+        }
+
         #endregion
 
         #region submethods PRIVATE
+
+        private static XmlDocument OpenXml()
+        {
+            using (var openFileDialogXML = new OpenFileDialog())
+            {
+                openFileDialogXML.InitialDirectory = "C:\\";
+                openFileDialogXML.Filter = "XML Files|*.xml";
+                openFileDialogXML.RestoreDirectory = true;
+
+                if (openFileDialogXML.ShowDialog() != DialogResult.OK)
+                {
+                    return CreateEmptyXmlDocument();
+                }
+
+                //  The stream will hold the results of opening the XML
+                using (var myStream = openFileDialogXML.OpenFile())
+                {
+                    try
+                    {
+                        //  Successfully return the XML
+                        XmlDocument parsedMyStream = new XmlDocument();
+                        parsedMyStream.Load(myStream);
+                        return parsedMyStream;
+                    }
+                    catch (XmlException ex)
+                    {
+                        MessageBox.Show("The XML could not be read. " + ex);
+                        return CreateEmptyXmlDocument();
+                    }
+                }
+            }
+        }
+
+        private static XmlDocument CreateEmptyXmlDocument()
+        {
+            //  Return an empty XmlDocument if the open file window was closed
+            XmlDocument emptyMyStream = new XmlDocument();
+            return emptyMyStream;
+        }
 
         /// <summary>
         /// Creates PmData object AlarmStripes
@@ -489,6 +679,12 @@ namespace BDM_Form
             PromoticClass.PmObjectClass obj = new PromoticClass.PmObjectClass();
             obj.Name = "AlarmStripes";
             obj.Type = "PmData";
+
+            //properties
+            obj.Prop = new List<PromoticClass.PropClass>();
+            obj.Prop.Add(SetPropType1("ReferenceType", "2"));
+            obj.Prop.Add(SetPropType1("ReferenceName", "AlarmStripes"));
+
             obj.Methods = new PromoticClass.MethodsClass();
             obj.Methods.Method = new List<PromoticClass.MethodClass>();
 
@@ -549,6 +745,9 @@ namespace BDM_Form
             obj.Type = "PmFolder";
             obj.PmObject = new List<PromoticClass.PmObjectClass>();
 
+            //PmTimer - AlarmTimer
+            obj.PmObject.Add(PmTimerObj("AlarmTimer", Script(@"\Scripts\CommonScripts.xml", "AlarmTimer")));
+
             //A0
             PromoticClass.PmObjectClass A0screen = new PromoticClass.PmObjectClass();
             A0screen.Name = "A0_nameExample";
@@ -557,6 +756,7 @@ namespace BDM_Form
 
             A0screen.Prop = new List<PromoticClass.PropClass>();
             A0screen.Prop.Add(SetPropType1("MemberOfLogicalGroups", "menu"));
+            A0screen.Prop.Add(SetPropType1("Title", "Panel 1"));
             A0screen.Prop.Add(SetPropType1("ScriptEngine", "javascript"));
             A0screen.Prop.Add(SetPropType1("View2AppLevel", "client"));
 
@@ -578,6 +778,9 @@ namespace BDM_Form
             A0localProps.Prop.Add(SetPropType1("BackgroundColor", "#c0c0c0"));
             A0localProps.Prop.Add(SetPropType1("FocusColor", "#000000"));
 
+            //web server
+            A0screen.Props.Add(WebProps(true, "a0"));
+
             //A1
             PromoticClass.PmObjectClass A1screen = new PromoticClass.PmObjectClass();
             A1screen.Name = "A1_nameExample";
@@ -586,6 +789,7 @@ namespace BDM_Form
 
             A1screen.Prop = new List<PromoticClass.PropClass>();
             A1screen.Prop.Add(SetPropType1("MemberOfLogicalGroups", "menu"));
+            A1screen.Prop.Add(SetPropType1("Title", "Podpanel 1"));
             A1screen.Prop.Add(SetPropType1("ScriptEngine", "javascript"));
             A1screen.Prop.Add(SetPropType1("View2AppLevel", "client"));
 
@@ -607,6 +811,9 @@ namespace BDM_Form
             A1localProps.Prop.Add(SetPropType1("BackgroundColor", "#c0c0c0"));
             A1localProps.Prop.Add(SetPropType1("FocusColor", "#000000"));
 
+            //web server
+            A1screen.Props.Add(WebProps(true, "a1"));
+
             //B0
             PromoticClass.PmObjectClass B0screen = new PromoticClass.PmObjectClass();
             B0screen.Name = "B0_nameExample";
@@ -615,6 +822,7 @@ namespace BDM_Form
 
             B0screen.Prop = new List<PromoticClass.PropClass>();
             B0screen.Prop.Add(SetPropType1("MemberOfLogicalGroups", "menu"));
+            B0screen.Prop.Add(SetPropType1("Title", "Panel 2"));
             B0screen.Prop.Add(SetPropType1("ScriptEngine", "javascript"));
             B0screen.Prop.Add(SetPropType1("View2AppLevel", "client"));
 
@@ -635,6 +843,9 @@ namespace BDM_Form
             B0localProps.Prop = new List<PromoticClass.PropClass>();
             B0localProps.Prop.Add(SetPropType1("BackgroundColor", "#c0c0c0"));
             B0localProps.Prop.Add(SetPropType1("FocusColor", "#000000"));
+
+            //web server
+            B0screen.Props.Add(WebProps(true, "b0"));
 
             return obj;
         }
@@ -940,6 +1151,210 @@ namespace BDM_Form
         }
 
         /// <summary>
+        /// Creates PmData object SaveSettings
+        /// </summary>
+        /// <returns>PromoticClass.PmObjectClass</returns>
+        private static PromoticClass.PmObjectClass SaveSettings_PmData(BDMdataClass data)
+        {
+            PromoticClass.PmObjectClass obj = new PromoticClass.PmObjectClass();
+            obj.Name = "SaveSettings";
+            obj.Type = "PmData";
+
+            //Events
+            obj.Events = new PromoticClass.EventsClass();
+            obj.Events.Name = "PmEvents";
+            obj.Events.Event = new List<PromoticClass.EventClass>();
+
+            PromoticClass.EventClass onItemAfterWrite = new PromoticClass.EventClass();
+            obj.Events.Event.Add(onItemAfterWrite);
+            onItemAfterWrite.Name = "onItemAfterWrite";
+            onItemAfterWrite.Type = "Pm";
+            onItemAfterWrite.Script.Content = SaveSettingsScript(data);
+
+
+
+            //vars
+            PromoticClass.ListClass vars = new PromoticClass.ListClass();
+            vars.Name = "Vars";
+            vars.Props = new List<PromoticClass.PropsClass>();
+
+            obj.List = new List<PromoticClass.ListClass>();
+            obj.List.Add(vars);
+
+            //Data
+            vars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+            vars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Save values to config file", null, "1", false));
+            
+            return obj;
+        }
+
+        /// <summary>
+        /// Build Script to onItemAfterWrite event in SaveSettings object
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private static string SaveSettingsScript(BDMdataClass data)
+        {
+            string str_save = '\"' + "Save" + '\"';
+            string str_load = '\"' + "Load" + '\"';
+
+
+            string cont = "";
+
+            //Save section
+            cont += "if pEvent.Item.Name = " + str_save + "and pMe.Item(" + str_save + ").Value then";
+            cont += Environment.NewLine;
+            cont += "'set all save vars in all objects";
+            cont += Environment.NewLine;
+
+            foreach (BasicObject item in data.Objects)
+            {
+                if (item.DataType == Resource.AinType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/AinData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.AoutType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/AoutData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.DinType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/DinData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.DoutType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/DoutData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.GrpType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/GrpData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.PIDType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/PIDCtrlData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.PreselType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/PreselData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.AnalogPosType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/AnalogPosCtrlData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.OnOffType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/OnOffCtrlData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.OnOff2DType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/OnOffCtrlData_2D/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.OnOffVSDType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/OnOffCtrlData_VSD/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.PIDStepType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/PIDStepCtrlData/" + item.TagName + "/#vars/Save" + '\"' + ").Value = true";
+                }
+
+                cont += Environment.NewLine;
+            }
+            cont += "pMe.Item(" + str_save + ").Value = false";
+            cont += Environment.NewLine;
+            cont += "end if";
+
+            //Load section
+            cont += Environment.NewLine;
+            cont += Environment.NewLine;
+            cont += "if pEvent.Item.Name = " + str_load + "and pMe.Item(" + str_load + ").Value then";
+            cont += Environment.NewLine;
+            cont += "'set all load vars in all objects";
+            cont += Environment.NewLine;
+
+            foreach (BasicObject item in data.Objects)
+            {
+                if (item.DataType == Resource.AinType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/AinData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.AoutType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/AoutData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.DinType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/DinData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.DoutType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/DoutData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.GrpType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/GrpData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.PIDType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/PIDCtrlData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.PreselType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/PreselData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.AnalogPosType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/AnalogPosCtrlData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.OnOffType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/OnOffCtrlData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.OnOff2DType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/OnOffCtrlData_2D/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.OnOffVSDType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/OnOffCtrlData_VSD/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                if (item.DataType == Resource.PIDStepType)
+                {
+                    cont += "pMe.Pm(" + '\"' + "/Z45AppCore/PIDStepCtrlData/" + item.TagName + "/#vars/Load" + '\"' + ").Value = true";
+                }
+
+                cont += Environment.NewLine;
+            }
+            cont += "pMe.Item(" + str_load + ").Value = false";
+            cont += Environment.NewLine;
+            cont += "end if";
+
+            return cont;
+        }
+
+        /// <summary>
         /// Creates PmWeb object Web
         /// </summary>
         /// <returns>PromoticClass.PmObjectClass</returns>
@@ -978,6 +1393,53 @@ namespace BDM_Form
 
             return obj;
         }
+
+        /// <summary>
+        /// Add xml code to final xml export
+        /// </summary>
+        /// <param name="spath">Path to xml part to be included</param>
+        /// <param name="filePath">Path where export xml is saved</param>
+        /// <param name="addAfter">Element after which new part is added</param>
+        private static void AddXML(string spath, string filePath, string addAfter)
+        {
+            //load faceplate node from Scripts
+            string path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+            path = path.Substring(6) + spath;
+
+            XmlDocument xmlDocFP = new XmlDocument();
+            xmlDocFP.Load(path);
+
+            //XmlDocument -> XDocument
+            XDocument xDocFP = XDocument.Load(new XmlNodeReader(xmlDocFP));
+
+            //get root node
+            XElement xDocFPRoot = xDocFP.Root;
+
+            //load final xml file
+            XmlDocument xmlDocFinal = new XmlDocument();
+            xmlDocFinal.Load(filePath);
+
+            //XmlDocument -> XDocument
+            XDocument xDocFinal = XDocument.Load(new XmlNodeReader(xmlDocFinal));
+
+            //get child to copy after faceplates
+            XElement xDocFinalNode = xDocFinal.Root.Descendants("PmObject").First(el => (string)el.Attribute("Name") == addAfter);
+
+            //append node
+            xDocFinalNode.AddAfterSelf(xDocFPRoot);
+
+            //XDocument -> XmlDocument
+            var xmlDocument = new XmlDocument();
+            using (var xmlReader = xDocFinal.CreateReader())
+            {
+                xmlDocument.Load(xmlReader);
+            }
+
+            //save xml
+            xmlDocument.Save(filePath);
+
+        }
+
 
         /// <summary>
         /// Creates PmWorkspace object Workspace
@@ -1071,6 +1533,7 @@ namespace BDM_Form
 
             gitem.Prop.Add(SetPropType1("Dx", "1920"));
             gitem.Prop.Add(SetPropType1("Dy", "80"));
+            gitem.Prop.Add(SetPropType1("FocusType", "0"));
 
             gitem.Props = new List<PromoticClass.PropsClass>();
 
@@ -1083,6 +1546,7 @@ namespace BDM_Form
 
             localProps.Prop.Add(SetPropType2("titles", "string"));
             localProps.Prop.Add(SetPropType2("pathes", "string"));
+            localProps.Prop.Add(SetPropType2("names", "string"));
             localProps.Prop.Add(SetPropType2("subTitles", "string"));
             localProps.Prop.Add(SetPropType2("subPathes", "string"));
             localProps.Prop.Add(SetPropType2("titlesWidth", "double", "0"));
@@ -1090,6 +1554,7 @@ namespace BDM_Form
             localProps.Prop.Add(SetPropType2("selMain", "integer", "1000"));
             localProps.Prop.Add(SetPropType2("selSub", "integer", "1000"));
             localProps.Prop.Add(SetPropType2("blink", "bool", "0"));
+            localProps.Prop.Add(SetPropType2("DefaultPanel", "integer", "0"));
 
             localProps.Prop.Add(SetPropType3("Stripes", "string", "string", null, "PP", "/Z45AppCore/AlarmStripes/#vars/Menu;Value"));
 
@@ -1114,11 +1579,20 @@ namespace BDM_Form
             gitem.Event.Add(SetEvent("onMousePress", "Pm", Script(@"Scripts\WorkspaceScripts.xml", "MenuOnMousePressEvent")));
 
             //methods
-            gitem.Methods = new PromoticClass.MethodsClass();
-            gitem.Methods.Name = "Canvas";
-            gitem.Methods.Method = new List<PromoticClass.MethodClass>();
+            gitem.Methods = new List<PromoticClass.MethodsClass>();
 
-            gitem.Methods.Method.Add(SetMethod("onDraw", "", Script(@"Scripts\WorkspaceScripts.xml", "MenuOnDrawMethod")));
+            PromoticClass.MethodsClass methods = new PromoticClass.MethodsClass();
+            gitem.Methods.Add(methods);
+            methods.Method = new List<PromoticClass.MethodClass>();
+            methods.Method.Add(SetMethod("Init", "", Script(@"Scripts\WorkspaceScripts.xml", "MenuInitMethod")));
+
+            //methods - canvas
+            PromoticClass.MethodsClass canvasmethods = new PromoticClass.MethodsClass();
+            gitem.Methods.Add(canvasmethods);
+            canvasmethods.Method = new List<PromoticClass.MethodClass>();
+            canvasmethods.Name = "Canvas";
+
+            canvasmethods.Method.Add(SetMethod("onDraw", "", Script(@"Scripts\WorkspaceScripts.xml", "MenuOnDrawMethod")));
 
             //Podobjekt Toolbar PmPanel
             PromoticClass.PmObjectClass toolbarObj = new PromoticClass.PmObjectClass();
@@ -1417,10 +1891,106 @@ namespace BDM_Form
             giUser.Prop.Add(SetPropType1("ShadowType", "0"));
             giUser.Prop.Add(SetPropType1("ShadowColor", "#808080"));
 
-            //
             giUser.Event = new List<PromoticClass.EventClass>();
 
             giUser.Event.Add(SetEvent("onMousePress", "Pm", Script(@"Scripts\WorkspaceScripts.xml", "ToolbarOnMousePressEvent_user")));
+
+            //
+
+            //Save button
+            PromoticClass.GItemClass Btn_Save = new PromoticClass.GItemClass();
+            Btn_Save.Name = "Btn_Save";
+            Btn_Save.Type = "PmiButton";
+            toolbarObj.GPanel.GItem.Add(Btn_Save);
+
+            Btn_Save.Prop = new List<PromoticClass.PropClass>();
+
+            Btn_Save.Prop.Add(SetPropType1("X", "1540"));
+            Btn_Save.Prop.Add(SetPropType1("Y", "0"));
+            Btn_Save.Prop.Add(SetPropType1("Dx", "60"));
+            Btn_Save.Prop.Add(SetPropType1("Dy", "20"));
+            Btn_Save.Prop.Add(SetPropType1("FocusType", "0"));
+            Btn_Save.Prop.Add(SetPropType1("ColorItem", "#c0c0c0"));
+            Btn_Save.Prop.Add(SetPropType1("BorderWidth", "1"));
+            Btn_Save.Prop.Add(SetPropType1("BorderContrast", "60"));
+            Btn_Save.Prop.Add(SetPropType1("GradientEnabled", "1"));
+            Btn_Save.Prop.Add(SetPropType1("GradientContrast", "15"));
+            Btn_Save.Prop.Add(SetPropType1("GradientDirection", "0"));
+            Btn_Save.Prop.Add(SetPropType1("BnAttributes", "12"));
+
+            Btn_Save.Props = new List<PromoticClass.PropsClass>();
+
+            PromoticClass.PropsClass Btn_SaveProps = new PromoticClass.PropsClass();
+            Btn_SaveProps.Name = "Text";
+            Btn_Save.Props.Add(Btn_SaveProps);
+
+            Btn_SaveProps.Prop = new List<PromoticClass.PropClass>();
+            Btn_SaveProps.Prop.Add(SetPropType1("StringText", "Save"));
+            Btn_SaveProps.Prop.Add(SetPropType1("FontText", "PmMiddle"));
+            Btn_SaveProps.Prop.Add(SetPropType1("AlignHor", "1"));
+            Btn_SaveProps.Prop.Add(SetPropType1("AlignVer", "1"));
+
+            PromoticClass.PropsClass Btn_SaveLocalProps = new PromoticClass.PropsClass();
+            Btn_SaveLocalProps.Name = "localProps";
+            Btn_Save.Props.Add(Btn_SaveLocalProps);
+
+            Btn_SaveLocalProps.Prop = new List<PromoticClass.PropClass>();
+            Btn_SaveLocalProps.Prop.Add(SetPropType3("Value", "bool", "bool", null, "PP", "/Z45AppCore/SaveSettings/#vars/Save;Value"));
+
+            //
+            Btn_Save.Event = new List<PromoticClass.EventClass>();
+
+            Btn_Save.Event.Add(SetEvent("onButtonUp", "Pm", Script(@"Scripts\WorkspaceScripts.xml", "SetValueTrue")));
+            //
+
+            //Load button
+            PromoticClass.GItemClass Btn_Load = new PromoticClass.GItemClass();
+            Btn_Load.Name = "Btn_Load";
+            Btn_Load.Type = "PmiButton";
+            toolbarObj.GPanel.GItem.Add(Btn_Load);
+
+            Btn_Load.Prop = new List<PromoticClass.PropClass>();
+
+            Btn_Load.Prop.Add(SetPropType1("X", "1600"));
+            Btn_Load.Prop.Add(SetPropType1("Y", "0"));
+            Btn_Load.Prop.Add(SetPropType1("Dx", "60"));
+            Btn_Load.Prop.Add(SetPropType1("Dy", "20"));
+            Btn_Load.Prop.Add(SetPropType1("FocusType", "0"));
+            Btn_Load.Prop.Add(SetPropType1("ColorItem", "#c0c0c0"));
+            Btn_Load.Prop.Add(SetPropType1("BorderWidth", "1"));
+            Btn_Load.Prop.Add(SetPropType1("BorderContrast", "60"));
+            Btn_Load.Prop.Add(SetPropType1("GradientEnabled", "1"));
+            Btn_Load.Prop.Add(SetPropType1("GradientContrast", "15"));
+            Btn_Load.Prop.Add(SetPropType1("GradientDirection", "0"));
+            Btn_Load.Prop.Add(SetPropType1("BnAttributes", "12"));
+
+            Btn_Load.Props = new List<PromoticClass.PropsClass>();
+
+            PromoticClass.PropsClass Btn_LoadProps = new PromoticClass.PropsClass();
+            Btn_LoadProps.Name = "Text";
+            Btn_Load.Props.Add(Btn_LoadProps);
+
+            Btn_LoadProps.Prop = new List<PromoticClass.PropClass>();
+            Btn_LoadProps.Prop.Add(SetPropType1("StringText", "Load"));
+            Btn_LoadProps.Prop.Add(SetPropType1("FontText", "PmMiddle"));
+            Btn_LoadProps.Prop.Add(SetPropType1("AlignHor", "1"));
+            Btn_LoadProps.Prop.Add(SetPropType1("AlignVer", "1"));
+
+            PromoticClass.PropsClass Btn_LoadLocalProps = new PromoticClass.PropsClass();
+            Btn_LoadLocalProps.Name = "localProps";
+            Btn_Load.Props.Add(Btn_LoadLocalProps);
+
+            Btn_LoadLocalProps.Prop = new List<PromoticClass.PropClass>();
+            Btn_LoadLocalProps.Prop.Add(SetPropType3("Value", "bool", "bool", null, "PP", "/Z45AppCore/SaveSettings/#vars/Load;Value"));
+
+            //
+            Btn_Load.Event = new List<PromoticClass.EventClass>();
+
+            Btn_Load.Event.Add(SetEvent("onButtonUp", "Pm", Script(@"Scripts\WorkspaceScripts.xml", "SetValueTrue")));
+            //
+
+            
+            
 
             return obj;
         }
@@ -1534,26 +2104,29 @@ namespace BDM_Form
 
             extList.Props = new List<PromoticClass.PropsClass>();
 
-            //comm extension
-            PromoticClass.PropsClass commProps = new PromoticClass.PropsClass();
-            commProps.Name = "comm";
-            commProps.Type = "Comm";
-            extList.Props.Add(commProps);
+            if (commPath != null)
+            {
+                //comm extension
+                PromoticClass.PropsClass commProps = new PromoticClass.PropsClass();
+                commProps.Name = "comm";
+                commProps.Type = "Comm";
+                extList.Props.Add(commProps);
 
-            commProps.Prop = new List<PromoticClass.PropClass>();
-            if (commPath != "")
-            {
-                if (commPath != " ")
-                    commPath = @"/Comm/data";
-                
-                commProps.Prop.Add(SetPropType1("PmObject", commPath));
-                
+                commProps.Prop = new List<PromoticClass.PropClass>();
+                if (commPath != "")
+                {
+                    if (commPath == " ")
+                        commPath = @"/Comm/data";
+
+                    commProps.Prop.Add(SetPropType1("PmObject", commPath));
+
+                }
+                else
+                {
+                    commProps.Prop.Add(SetPropType1("PmObject", "/Comm/Data"));
+                }
+                commProps.Prop.Add(SetPropType1("ItemID", commItemId));
             }
-            else
-            {
-                commProps.Prop.Add(SetPropType1("PmObject", "/Comm/Data"));
-            }
-            commProps.Prop.Add(SetPropType1("ItemID", commItemId));
 
             if (wactVal != null)
             {
@@ -1987,7 +2560,7 @@ namespace BDM_Form
             columns.Props.Add(colprops1);
 
             colprops1.Prop.Add(SetPropType1("Title", "$.text('sys','source')"));
-            colprops1.Prop.Add(SetPropType1("Width", "60"));
+            colprops1.Prop.Add(SetPropType1("Width", "120"));
 
             //
             PromoticClass.PropsClass colprops2 = new PromoticClass.PropsClass();
@@ -2187,7 +2760,7 @@ namespace BDM_Form
             pmObject.Events = new PromoticClass.EventsClass();
             pmObject.Events.Event = new List<PromoticClass.EventClass>();
 
-            pmObject.Name = "AlarmTimer";
+            pmObject.Name = name;
             pmObject.Type = "PmTimer";
 
             pmObject.Events.Name = "PmEvents";
@@ -2231,14 +2804,14 @@ namespace BDM_Form
         /// </summary>
         /// <param name="addToList">True if visible in overview list.</param>
         /// <returns>PromoticClass.PropsClass</returns>
-        private static PromoticClass.PropsClass WebProps(bool addToList)
+        private static PromoticClass.PropsClass WebProps(bool addToList, string webName = "$.expr(\"pMe.Name\")")
         {
             PromoticClass.PropsClass obj = new PromoticClass.PropsClass();
             obj.Name = "WebServer";
             obj.Prop = new List<PromoticClass.PropClass>();
 
             obj.Prop.Add(SetPropType1("Enable", "1"));
-            obj.Prop.Add(SetPropType1("Id", "$.expr(\"pMe.Name\")"));
+            obj.Prop.Add(SetPropType1("Id", webName));
             obj.Prop.Add(SetPropType1("Server", "/Z45AppCore/Web"));
             obj.Prop.Add(SetPropType1("RefreshPeriod", "0.5"));
             obj.Prop.Add(SetPropType1("AddToList", Convert.ToInt32(addToList).ToString()));
@@ -2317,8 +2890,8 @@ namespace BDM_Form
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
 
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("Seq",             DataType.Boolean, null, "Sequence",                             null, "1", true));
                     listVars.Props.Add(SetPropsType1("Cen",             DataType.Boolean, null, "Central",                              null, "1", true));
@@ -2352,7 +2925,7 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType2("HMI_DevDelay",    DataType.Integer, null, "Deviation delay from FP",              commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "INT"),   null, false, false));
                     listVars.Props.Add(SetPropsType2("PF",              DataType.Integer, null, "Pulse freq factor",                    commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "INT"),   null, false, false));
                     listVars.Props.Add(SetPropsType2("HMI_DevDB",       DataType.Double,  null, "Deviation deadband from FP",           commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 8, "REAL"),  null, false, false));
-                    listVars.Props.Add(SetPropsType2("CmdValue",        DataType.Double,  null, "Command value",                        commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 12, "REAL"), null, false, true, "TrendExtNameCmdValue"));
+                    listVars.Props.Add(SetPropsType2("CmdValue",        DataType.Double,  null, "Command value",                        commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 12, "REAL"), "1", false, true, "TrendExtNameCmdValue"));
                     listVars.Props.Add(SetPropsType2("ActFB",           DataType.Double,  null, "Actual feedback",                      commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 16, "REAL"), null, false, true, "TrendExtNameActFB"));
                     listVars.Props.Add(SetPropsType2("ConPuK",          DataType.Double,  null, "Pulse lenght factor",                  commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 20, "REAL"), null, false, false));
                     listVars.Props.Add(SetPropsType2("ACTT",            DataType.Double,  null, "Actuator time",                        commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 24, "REAL"), null, false, false));
@@ -2364,6 +2937,9 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("AnyAl",               DataType.Boolean, null,     "HMI only",                         null, null, false));
                     listVars.Props.Add(SetPropsType1("AnyAck",              DataType.Boolean, null,     "HMI only",                         null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",                DataType.String, null,      "HMI only",                         null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
 
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "AnalogPosCtrl..");
@@ -2420,27 +2996,30 @@ namespace BDM_Form
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
 
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("ManualMode",      DataType.Boolean, null, "Manual mode",              null, "1", true));
                     listVars.Props.Add(SetPropsType1("SetAuto",         DataType.Boolean, null, "Set Auto mode",            null, "1", false));
                     listVars.Props.Add(SetPropsType1("HWSigFault",      DataType.Boolean, null, "Hardware signal fault",    null, "1", false));
                     listVars.Props.Add(SetPropsType1("SetManual",       DataType.Boolean, null, "Set Manual mode",          null, "1", false));
 
-                    listVars.Props.Add(SetPropsType2("HMI_Value",       DataType.Double,  null, "Value from FP",            commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "REAL"), null, false, false));
+                    listVars.Props.Add(SetPropsType2("HMI_Value",       DataType.Double,  null, "Value from FP",            commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "REAL"), "1", false, false));
                     listVars.Props.Add(SetPropsType2("Min",             DataType.Double,  null, "Min",                      commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 8, "REAL"), "1", false, false));
                     listVars.Props.Add(SetPropsType2("Max",             DataType.Double,  "100","Max",                      commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 12, "REAL"), "1", false, false));
                     listVars.Props.Add(SetPropsType2("ValueIn",         DataType.Double,  null, "Value from logic",         commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 16, "REAL"), null, false, false));
                     listVars.Props.Add(SetPropsType2("ValueOut",        DataType.Double,  null, "Value out to channel",     commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 20, "REAL"), null, false, true));
 
-                    listVars.Props.Add(SetPropsType1("HWSigFault_ALAck",    DataType.String, null,      "HMI only", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HWSigFault_ALAck",    DataType.Boolean, null,      "HMI only", null, "1", false));
                     listVars.Props.Add(SetPropsType1("Description",         DataType.String, tag.Descr, "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Unit",                DataType.String, tag.Unit,  "HMI only", null, null, false));
-                    listVars.Props.Add(SetPropsType1("AnyAl",               DataType.String, null,      "HMI only", null, null, false));
-                    listVars.Props.Add(SetPropsType1("AnyAck",              DataType.String, null,      "HMI only", null, null, false));
+                    listVars.Props.Add(SetPropsType1("AnyAl",               DataType.Boolean, null,      "HMI only", null, null, false));
+                    listVars.Props.Add(SetPropsType1("AnyAck",              DataType.Boolean, null,      "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",                DataType.String, null,      "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("barGraphColor1",      DataType.String, "#30ccff", "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("barGraphColor2",      DataType.String, "#a8ccf0", "HMI only", null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
 
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "Aout..");
@@ -2496,7 +3075,7 @@ namespace BDM_Form
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
 
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("ManualMode",      DataType.Boolean, null, "Manual mode",      null, "1", true));
                     listVars.Props.Add(SetPropsType1("Value",           DataType.Boolean, null, "Value to channel", null, "1", true));
@@ -2508,6 +3087,9 @@ namespace BDM_Form
 
                     listVars.Props.Add(SetPropsType1("Description", DataType.String, tag.Descr, "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",        DataType.String, null,      "HMI only", null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
 
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "Dout..");
@@ -2563,8 +3145,8 @@ namespace BDM_Form
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
 
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("GrRFS",           DataType.Boolean, null, "Group ready for start",    null, "1", false));
                     listVars.Props.Add(SetPropsType1("Cen",             DataType.Boolean, null, "Central",                  null, "1", true));
@@ -2594,6 +3176,9 @@ namespace BDM_Form
 
                     listVars.Props.Add(SetPropsType1("Description", DataType.String, tag.Descr, "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",        DataType.String, null,      "HMI only", null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
 
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "GroupCtrl..");
@@ -2650,10 +3235,10 @@ namespace BDM_Form
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
 
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W3", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W4", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W3", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W4", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("Cmd0Int",         DataType.Boolean, null, "Internal command 0",       null, "1", false));
                     listVars.Props.Add(SetPropsType1("Cmd1Int",         DataType.Boolean, null, "Intenral command 1",       null, "1", false));
@@ -2715,6 +3300,9 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("AnyAck",      DataType.Boolean, null,         "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",        DataType.String,  null,         "HMI only", null, null, false));
 
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
+
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "OnOffCtrl..");
                 }
@@ -2770,11 +3358,11 @@ namespace BDM_Form
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
 
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W3", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W4", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W5", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 8, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W3", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W4", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W5", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 8, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("Cmd0Int",         DataType.Boolean, null, "Command 0 internal",                       null, "1", false));
                     listVars.Props.Add(SetPropsType1("Cmd1IntCW",       DataType.Boolean, null, "Command 1 cw internal",                    null, "1", false));
@@ -2863,6 +3451,9 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("AnyAck",      DataType.Boolean, null,         "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",        DataType.String,  null,         "HMI only", null, null, false));
 
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
+
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "OnOffCtrl2D..");
                 }
@@ -2917,13 +3508,13 @@ namespace BDM_Form
                     subObj.List.Add(listVars);
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W3", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W4", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W5", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 8, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W6", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 10, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W7", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 14, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W3", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W4", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W5", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 8, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W6", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 10, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W7", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 14, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("Cmd0Int",         DataType.Boolean, null, "Command 0 internal",                   null, "1", false));
                     listVars.Props.Add(SetPropsType1("Cmd1IntCW",       DataType.Boolean, null, "Command 1 cw internal",                null, "1", false));
@@ -3009,8 +3600,8 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("ComFault",        DataType.Boolean, null, "VSD link - communication fault",       null, "1", false));
 
                     listVars.Props.Add(SetPropsType2("FBTime",          DataType.Integer, null, "Feedback time",                        commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 12, "INT"), null, false, false));
-                    listVars.Props.Add(SetPropsType2("HMI_PV",          DataType.Double,  null, "VSD link - process value",             commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 16, "REAL"), null, false, true, "TrendExtNameHMI_PV"));
-                    listVars.Props.Add(SetPropsType2("HMI_SV",          DataType.Double,  null, "VSD link - setpoint value",            commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 20, "REAL"), null, false, true, "TrendExtNameHMI_SV"));
+                    listVars.Props.Add(SetPropsType2("HMI_PV",          DataType.Double,  null, "VSD link - process value",             commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 20, "REAL"), null, false, true, "TrendExtNameHMI_PV"));
+                    listVars.Props.Add(SetPropsType2("HMI_SV",          DataType.Double,  null, "VSD link - setpoint value",            commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 16, "REAL"), "1", false, true, "TrendExtNameHMI_SV"));
 
                     listVars.Props.Add(SetPropsType1("Description", DataType.String, tag.Descr,     "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("ICCW_text",   DataType.String, "ICCW text",   "HMI only", null, null, false));
@@ -3030,6 +3621,9 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("AnyAl",       DataType.Boolean, null,         "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("AnyAck",      DataType.Boolean, null,         "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",        DataType.String,  null,         "HMI only", null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
 
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "OnOffCtrlVSD..");
@@ -3084,8 +3678,8 @@ namespace BDM_Form
                     subObj.List.Add(listVars);
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("OUT_Seq",         DataType.Boolean, null, "Sequence",                     null, "1", true));
                     listVars.Props.Add(SetPropsType1("OUT_Cen",         DataType.Boolean, null, "Central",                      null, "1", true));
@@ -3105,9 +3699,9 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("HMI_Apply",       DataType.Boolean, null, "Apply PID parameters from FP", null, "1", false));
 
                     listVars.Props.Add(SetPropsType2("HMI_PIDType",     DataType.Integer, null, "PID type from FP",              commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "INT"), null, false, false));
-                    listVars.Props.Add(SetPropsType2("ActSP",           DataType.Double, null, "Actual setpoint",               commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "REAL"), null, false, true, "TrendExtNameActSP"));
+                    listVars.Props.Add(SetPropsType2("ActSP",           DataType.Double, null, "Actual setpoint",               commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "REAL"), "1", false, true, "TrendExtNameActSP"));
                     listVars.Props.Add(SetPropsType2("ActPV",           DataType.Double, null, "Actual process value",          commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 10, "REAL"), null, false, true, "TrendExtNameActPV"));
-                    listVars.Props.Add(SetPropsType2("ValueOut",        DataType.Double, null, "Value out",                     commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 14, "REAL"), null, false, true, "TrendExtNameValueOut"));
+                    listVars.Props.Add(SetPropsType2("ValueOut",        DataType.Double, null, "Value out",                     commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 14, "REAL"), "1", false, true, "TrendExtNameValueOut"));
                     listVars.Props.Add(SetPropsType2("HMI_PIDOutMax",   DataType.Double, null, "Limit max for value out",       commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 18, "REAL"),  "1", false, false));
                     listVars.Props.Add(SetPropsType2("HMI_PIDOutMin",   DataType.Double, null, "Limit min for value out",       commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 22, "REAL"),  "1", false, false));
                     listVars.Props.Add(SetPropsType2("HMI_Ti",          DataType.Double, null, "Integration constant from FP",  commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 26, "REAL"), null, false, false));
@@ -3121,8 +3715,110 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("Unit",        DataType.String, tag.Unit,  "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",        DataType.String, "",        "HMI only", null, null, false));
 
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
+
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "PIDCtrl..");
+                }
+
+                return obj;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private static PromoticClass.PmObjectClass PIDStep_PmFolder(List<BasicObject> data)
+        {
+            if (data.Count > 0)
+            {
+                PromoticClass.PmObjectClass obj = new PromoticClass.PmObjectClass();
+                obj.Name = "PIDStepCtrlData";
+                obj.Type = "PmFolder";
+                obj.PmObject = new List<PromoticClass.PmObjectClass>();
+
+                string commPath = null;
+
+                foreach (BasicObject tag in data)
+                {
+                    commPath = tag.S7Comm;
+
+                    PromoticClass.PmObjectClass subObj = new PromoticClass.PmObjectClass();
+                    obj.PmObject.Add(subObj);
+
+                    subObj.Name = tag.TagName;
+                    subObj.Type = "PmData";
+
+                    //events
+                    subObj.Events = new PromoticClass.EventsClass();
+                    subObj.Events.Name = "PmEvents";
+                    subObj.Events.Event = new List<PromoticClass.EventClass>();
+
+                    subObj.Events.Event.Add(SetEvent("onItemAfterWrite", "Pm", Script(@"Scripts\PmDataScripts.xml", "PIDStepCtrlDataOnItemAfterWriteEvent")));
+
+                    //vars
+                    subObj.List = new List<PromoticClass.ListClass>();
+
+                    PromoticClass.ListClass listVars = new PromoticClass.ListClass();
+                    listVars.Name = "Vars";
+                    subObj.List.Add(listVars);
+
+                    listVars.Props = new List<PromoticClass.PropsClass>();
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "INT"), "1", false, false));
+
+                    listVars.Props.Add(SetPropsType1("OUT_Seq", DataType.Boolean, null, "Sequence", null, "1", true));
+                    listVars.Props.Add(SetPropsType1("OUT_Cen", DataType.Boolean, null, "Central", null, "1", true));
+                    listVars.Props.Add(SetPropsType1("OUT_E1", DataType.Boolean, null, "E1", null, "1", true));
+                    listVars.Props.Add(SetPropsType1("OUT_E2", DataType.Boolean, null, "E2", null, "1", true));
+                    listVars.Props.Add(SetPropsType1("OUT_Track", DataType.Boolean, null, "Track", null, "1", true));
+                    listVars.Props.Add(SetPropsType1("OUT_Auto", DataType.Boolean, null, "Auto", null, "1", true));
+                    listVars.Props.Add(SetPropsType1("OUT_Man", DataType.Boolean, null, "Manual", null, "1", true));
+                    listVars.Props.Add(SetPropsType1("HMI_ManSel", DataType.Boolean, null, "Set manual from FP", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HMI_E1Sel", DataType.Boolean, null, "Set E1 from FP", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HMI_E2Sel", DataType.Boolean, null, "Set E2 from FP", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HMI_Track", DataType.Boolean, null, "Set track from FP", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HMI_CenSel", DataType.Boolean, null, "Set central from FP", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HMI_AutoSel", DataType.Boolean, null, "Set auto from FP", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HMI_Sim", DataType.Boolean, null, "Simulation", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HMI_Dir", DataType.Boolean, null, "Set direction from FP", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("HMI_Apply", DataType.Boolean, null, "Apply PID parameters from FP", null, "1", false));
+
+                    listVars.Props.Add(SetPropsType2("OUT_QLMNUP", DataType.Boolean, null, "Pulse up", null, null, "1", true, true, "TrendExtNameQLMNUP"));
+                    listVars.Props.Add(SetPropsType2("OUT_QLMNDN", DataType.Boolean, null, "Pulse down", null, null, "1", true, true, "TrendExtNameQLMNDN"));
+
+                    listVars.Props.Add(SetPropsType1("HMI_ValveOpen", DataType.Boolean, null, "Manual command Open Valve", null, "1", true));
+                    listVars.Props.Add(SetPropsType1("HMI_ValveClose", DataType.Boolean, null, "Manual command Close Valve", null, "1", true));
+
+                    listVars.Props.Add(SetPropsType2("HMI_PIDType", DataType.Integer, null, "PID type from FP", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 4, "INT"), null, false, false));
+                    listVars.Props.Add(SetPropsType2("ActSP", DataType.Double, null, "Actual setpoint", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 6, "REAL"), "1", false, true, "TrendExtNameActSP"));
+                    listVars.Props.Add(SetPropsType2("ActPV", DataType.Double, null, "Actual process value", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 10, "REAL"), null, false, true, "TrendExtNameActPV"));
+                    listVars.Props.Add(SetPropsType2("HMI_MTR", DataType.Double, null, "Manipulate time", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 14, "REAL"), null, true, false));
+                    listVars.Props.Add(SetPropsType2("HMI_Break", DataType.Double, null, "Minimum break time", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 18, "REAL"), null, true, false));
+                    listVars.Props.Add(SetPropsType2("HMI_Pulse", DataType.Double, null, "Minimum pulse time", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 22, "REAL"), null, true, false));
+                    listVars.Props.Add(SetPropsType2("HMI_Ti", DataType.Double, null, "Integration constant from FP", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 26, "REAL"), null, false, false));
+                    listVars.Props.Add(SetPropsType2("HMI_Td", DataType.Double, null, "Derivation constant from FP", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 30, "REAL"), null, false, false));
+                    listVars.Props.Add(SetPropsType2("HMI_DB", DataType.Double, null, "Deadband from FP", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 34, "REAL"), null, false, false));
+                    listVars.Props.Add(SetPropsType2("HMI_Gain", DataType.Double, null, "Gain from FP", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 38, "REAL"), null, false, false));
+                    listVars.Props.Add(SetPropsType2("Min", DataType.Double, null, "Process value min", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 102, "REAL"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("Max", DataType.Double, null, "Process value max", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 106, "REAL"), "1", false, false));
+
+                    listVars.Props.Add(SetPropsType1("Description", DataType.String, tag.Descr, "HMI only", null, null, false));
+                    listVars.Props.Add(SetPropsType1("Unit", DataType.String, tag.Unit, "HMI only", null, null, false));
+                    listVars.Props.Add(SetPropsType1("Note", DataType.String, "", "HMI only", null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
+
+                    progStatus = (progStatus + progStep);
+                    UpdateStatus(progStatus, "PIDStepCtrl..");
                 }
 
                 return obj;
@@ -3174,7 +3870,7 @@ namespace BDM_Form
                     subObj.List.Add(listVars);
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("Presel",          DataType.Boolean, null, "Preselection",                 null, "1", true));
                     listVars.Props.Add(SetPropsType1("PreValid",        DataType.Boolean, null, "Preselection valid",           null, "1", false));
@@ -3185,6 +3881,9 @@ namespace BDM_Form
 
                     listVars.Props.Add(SetPropsType1("Description", DataType.String, tag.Descr, "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",        DataType.String, "",        "HMI only", null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
 
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "PreselCtrl..");
@@ -3216,7 +3915,8 @@ namespace BDM_Form
 
                 foreach (BasicObject tag in data)
                 {
-                    commPath = tag.S7Comm;
+                    commPath = tag.S7Comm.Equals(" ") ? "/Comm/Data" : tag.S7Comm;
+                    
                     PromoticClass.PmObjectClass subObj = new PromoticClass.PmObjectClass();
                     obj.PmObject.Add(subObj);
 
@@ -3230,6 +3930,7 @@ namespace BDM_Form
 
                     subObj.Events.Event.Add(SetEvent("onStart", "Pm", Script(@"Scripts\PmDataScripts.xml", "AinDataOnStartEvent")));
                     subObj.Events.Event.Add(SetEvent("onItemAfterWrite", "Pm", Script(@"Scripts\PmDataScripts.xml", "AinDataOnItemAfterWriteEvent")));
+                    subObj.Events.Event.Add(SetEvent("onStop", "Pm", Script(@"Scripts\PmDataScripts.xml", "AinDataOnStopEvent")));
 
                     //vars
                     subObj.List = new List<PromoticClass.ListClass>();
@@ -3240,14 +3941,15 @@ namespace BDM_Form
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
 
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
-                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W2", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 2, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("AlarmHH",         DataType.Boolean,   null, "Alarm active",               "", "1", false));
                     listVars.Props.Add(SetPropsType1("AlarmH",          DataType.Boolean,   null, "Alarm active",               "", "1", false));
                     listVars.Props.Add(SetPropsType1("AlarmL",          DataType.Boolean,   null, "Alarm active",               "", "1", false));
                     listVars.Props.Add(SetPropsType1("AlarmLL",         DataType.Boolean,   null, "Alarm active",               "", "1", false));
                     listVars.Props.Add(SetPropsType1("HWSigFault",      DataType.Boolean,   null, "HW Fault Alarm active",      "", "1", false));
+                    listVars.Props.Add(SetPropsType1("HWSigFaultInhibit",DataType.Boolean,  null, "HW Fault Alarm active",      "", "1", false));
                     listVars.Props.Add(SetPropsType1("Force",           DataType.Boolean,   null, "Value is forced from FP",    "", "1", true));
                     listVars.Props.Add(SetPropsType1("AlarmLInhibit",   DataType.Boolean,   null, "Alarm L block",              "", "1", false));
                     listVars.Props.Add(SetPropsType1("AlarmLLInhibit",  DataType.Boolean,   null, "Alarm LL block",             "", "1", false));
@@ -3285,6 +3987,9 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("Note",             DataType.String,   null,       "HMI only",                                 null, null, false));
                     listVars.Props.Add(SetPropsType1("barGraphColor1",   DataType.String,   "#30ccff",  "HMI only",                                 null, null, false));
                     listVars.Props.Add(SetPropsType1("barGraphColor2",   DataType.String,   "#a8ccf0",  "HMI only",                                 null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
 
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "Ain..");
@@ -3340,7 +4045,7 @@ namespace BDM_Form
                     subObj.List.Add(listVars);
 
                     listVars.Props = new List<PromoticClass.PropsClass>();
-                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "W"), "1", false, false));
+                    listVars.Props.Add(SetPropsType2("W1", DataType.Integer, null, "Comm word", commPath, BuildS7Conn(tag.DBNr, tag.PositionInDB, 0, "INT"), "1", false, false));
 
                     listVars.Props.Add(SetPropsType1("Alarm",           DataType.Boolean, null, "Alarm active",         null, "1", false));
                     listVars.Props.Add(SetPropsType1("Force",           DataType.Boolean, null, "Forced",               null, "1", true));
@@ -3357,6 +4062,9 @@ namespace BDM_Form
                     listVars.Props.Add(SetPropsType1("AnyAl",       DataType.Boolean, null,     "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("AnyAck",      DataType.Boolean, null,     "HMI only", null, null, false));
                     listVars.Props.Add(SetPropsType1("Note",        DataType.String, null,      "HMI only", null, null, false));
+
+                    listVars.Props.Add(SetPropsType1("Save", DataType.Boolean, "", "Save values to config file", null, "1", false));
+                    listVars.Props.Add(SetPropsType1("Load", DataType.Boolean, "", "Load values to config file", null, "1", false));
 
                     progStatus = (progStatus + progStep);
                     UpdateStatus(progStatus, "Din..");
@@ -3402,5 +4110,21 @@ namespace BDM_Form
         }
 
         #endregion
+    }
+
+    class TagList
+    {
+        public List<string> tag = new List<string>();
+    }
+
+    class AlarmStripesData
+    {
+        public List<AlarmStripePanel> Panel = new List<AlarmStripePanel>();
+    }
+
+    class AlarmStripePanel
+    {
+        public string Name;
+        public List<string> Tag = new List<string>();
     }
 }

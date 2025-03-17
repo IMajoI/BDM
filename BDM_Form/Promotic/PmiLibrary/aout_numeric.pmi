@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Document Load="Auto">
 	<Cfg Name="Default">
-		<Content ver="80323">
-			<GItem Name="Canvas1" Type="PmiCanvas">
+		<Content ver="80327">
+			<GItem Name="Canvas5" Type="PmiCanvas">
 				<Prop Name="EnabledInRt">1</Prop>
 				<Prop Name="EnabledInPanel">1</Prop>
 				<Prop Name="EnabledInWeb">1</Prop>
 				<Prop Name="EnabledInPrint">1</Prop>
 				<Prop Name="Attr0Dt">;24960</Prop>
-				<Prop Name="X">230</Prop>
-				<Prop Name="Y">90</Prop>
+				<Prop Name="X">190</Prop>
+				<Prop Name="Y">380</Prop>
 				<Prop Name="Dx">130</Prop>
 				<Prop Name="Dy">30</Prop>
 				<Props Name="Params">
-					<Prop Name="tagName" Type="par">aout1</Prop>
+					<Prop Name="tagName" Type="par">aout</Prop>
 					<Prop Name="fraction" Type="par">2</Prop>
 				</Props>
 				<Prop Name="ToolTip">
@@ -313,7 +313,7 @@ if(quality !== 192)
 					<Method Name="Value">
 						<Prop Name="Params">ctx,dx,dy</Prop>
 						<Script><![CDATA[var fraction = pEvent.GetVar("fraction").Value;
-var ValueOut =  Pm.Round(pEvent.GetVar("ValueOut").Value, 1 / Pm.Pow(10, fraction));
+var ValueOut =  Pm.StringFormat("%." + fraction +"f", Pm.Round(pEvent.GetVar("ValueOut").Value, 1 / Pm.Pow(10, fraction)));
 var vFontSize = Pm.Round(dy * 0.8, 1);
 var Unit = pEvent.GetVar("Unit").Value;
 
@@ -321,7 +321,7 @@ ctx.strokeStyle = "black";
 ctx.fillStyle = "black";
 ctx.font = vFontSize + "px arial";
 ctx.textAlign = "center";
-ctx.fillText(ValueOut + Unit, dx/2, vFontSize);]]></Script>
+ctx.fillText(ValueOut + " " + Unit, dx/2, vFontSize);]]></Script>
 					</Method>
 					<Method Name="onDraw">
 						<Prop Name="Params"></Prop>

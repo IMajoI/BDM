@@ -1,0 +1,428 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<PmObject Name="Z45_Graphics" Type="PmFolder">
+  <Prop Name="DisabledInRt">0</Prop>
+  <Prop Name="LastEditTime">2019.01.15 08:07:30</Prop>
+  <Prop Name="MacroPars"></Prop>
+  <Prop Name="MemberOfLogicalGroups"></Prop>
+  <Prop Name="ReferenceType">0</Prop>
+  <Prop Name="ReferenceName"></Prop>
+  <Events Name="PmEvents">
+    <Event Name="onStart" Type="Pm">
+      <Script><![CDATA[]]></Script>
+    </Event>
+    <Event Name="onStop" Type="Pm">
+      <Script><![CDATA[]]></Script>
+    </Event>
+  </Events>
+  <Methods/>
+  <PmObjects>
+    <PmObject Name="_SP" Type="PmPanel">
+      <Prop Name="DisabledInRt">0</Prop>
+      <Prop Name="LastEditTime">2019.01.15 09:27:34</Prop>
+      <Prop Name="MacroPars"></Prop>
+      <Prop Name="MemberOfLogicalGroups">menu</Prop>
+      <Prop Name="ReferenceType">0</Prop>
+      <Prop Name="ReferenceName"></Prop>
+      <Events Name="PmEvents">
+        <Event Name="onStart" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onStop" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onOpen" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onClose" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onRefresh" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onFocusIn" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onFocusOut" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onKeyPress" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onMousePress" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+      </Events>
+      <Methods/>
+      <Prop Name="Title">SP</Prop>
+      <Prop Name="Help"></Prop>
+      <Prop Name="Options">target:_blank;fixed:state;</Prop>
+      <Prop Name="Params"></Prop>
+      <Prop Name="ScriptEngine">javascript</Prop>
+      <Prop Name="View2AppLevel">client</Prop>
+      <Prop Name="MultiView">1</Prop>
+      <Prop Name="KeyCodeOpen">0</Prop>
+      <Props Name="AccessList">
+        <Prop Name="Style">0</Prop>
+        <List Name="Actions">
+          <Props Name="PanelClose">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+          <Props Name="PanelOpen">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+          <Props Name="WebMethods">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+          <Props Name="WebRead">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+          <Props Name="WebWrite">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+        </List>
+      </Props>
+      <Props Name="WebServer">
+        <Prop Name="Enable">1</Prop>
+        <Prop Name="Id">$.expr("pMe.Name")</Prop>
+        <Prop Name="Server">/Z45AppCore/Web</Prop>
+        <Prop Name="AddToList">0</Prop>
+        <Prop Name="RefreshErrMode">0</Prop>
+        <Prop Name="RefreshPeriod">0.5</Prop>
+      </Props>
+      <GPanel ver="80327">
+        <Prop Name="Dx">120</Prop>
+        <Prop Name="Dy">80</Prop>
+        <Prop Name="ItemsLockedDt">0</Prop>
+        <Prop Name="RasterEnabledDt">1</Prop>
+        <Prop Name="RasterSizeDt">10</Prop>
+        <Prop Name="RasterColorDt">#808080</Prop>
+        <Prop Name="OrderItemsEnabledDt">0</Prop>
+        <Prop Name="Enabled">1</Prop>
+        <Props Name="LocalProps">
+          <Prop Name="BackgroundColor">#c0c0c0</Prop>
+          <Prop Name="FocusColor">#000000</Prop>
+        </Props>
+        <Props Name="Params">
+          <Prop Name="tagPath" Type="par">tag</Prop>
+          <Prop Name="min" Type="par">0</Prop>
+          <Prop Name="max" Type="par">10</Prop>
+        </Props>
+        <Event Name="onStart" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onStop" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onRefresh" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onModeChange" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onViewerResize" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onPanelStartEnd" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onPanelStopEnd" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Methods></Methods>
+        <GItem Name="Edit" Type="PmiWEdit">
+          <Prop Name="Attr0Dt">;24960</Prop>
+          <Prop Name="X">10</Prop>
+          <Prop Name="Y">20</Prop>
+          <Prop Name="Dx">100</Prop>
+          <Prop Name="Dy">30</Prop>
+          <Props Name="LocalProps">
+            <Prop Name="HMI_Value" Type="double">
+              <DStatic Type="double">0</DStatic>
+              <DBind Type="PP">
+                <Prop Name="Value">$.par("tagPath");Value</Prop>
+              </DBind>
+            </Prop>
+          </Props>
+          <Prop Name="ColorItem">#ffffff</Prop>
+          <Prop Name="FontText">PmMiddleBold</Prop>
+          <Prop Name="Value">
+            <DStatic>99.999</DStatic>
+            <DBind Type="GP">
+              <Prop Name="Value">.;Vars("HMI_Value")</Prop>
+            </DBind>
+          </Prop>
+          <Prop Name="ValueDataType">2</Prop>
+          <Prop Name="ValueMin">0;0</Prop>
+          <Prop Name="ValueMax">100;0</Prop>
+          <Prop Name="ValueFormatType">0</Prop>
+          <Prop Name="ValueFormat">%.2f</Prop>
+          <Prop Name="AlignHor">1</Prop>
+          <Prop Name="AttrEdit">4</Prop>
+          <Prop Name="AttrEditEx">7</Prop>
+          <Prop Name="WndBorderType">3</Prop>
+          <Event Name="onDataEditAccept" Type="Pm">
+            <Script>
+              <![CDATA[
+pMe.Vars("HMI_Value").Value = pMe.Value;
+pMe.Root.Close("ok");
+]]>
+            </Script>
+          </Event>
+        </GItem>
+        <GItem Name="Text" Type="PmiText">
+          <Prop Name="Attr0Dt">;24960</Prop>
+          <Prop Name="X">60</Prop>
+          <Prop Name="Y">50</Prop>
+          <Prop Name="Dx">50</Prop>
+          <Prop Name="Dy">25</Prop>
+          <Prop Name="DrawBg">1</Prop>
+          <Prop Name="ColorItem">transparent</Prop>
+          <Prop Name="BorderWidth">0</Prop>
+          <Prop Name="BorderType">1</Prop>
+          <Prop Name="BorderContrast">60</Prop>
+          <Prop Name="GradientEnabled">1</Prop>
+          <Prop Name="GradientContrast">15</Prop>
+          <Prop Name="GradientDirection">2</Prop>
+          <Props Name="Text">
+            <Prop Name="Value">
+              <DStatic>500</DStatic>
+              <DBind Type="GP">
+                <Prop Name="Value">..;GetPar("max")</Prop>
+              </DBind>
+            </Prop>
+            <Prop Name="FontText">PmMiddle</Prop>
+            <Prop Name="AlignHor">2</Prop>
+            <Prop Name="AlignVer">1</Prop>
+          </Props>
+          <Prop Name="ValueDataType">1</Prop>
+          <Prop Name="ValueFormatType">0</Prop>
+          <Prop Name="ValueFormat">%.2f</Prop>
+          <Prop Name="ValueMin">0;0</Prop>
+          <Prop Name="ValueMax">100;0</Prop>
+          <Prop Name="EditAttr">0</Prop>
+          <Prop Name="ShadowType">0</Prop>
+          <Prop Name="ShadowColor">#808080</Prop>
+        </GItem>
+        <GItem Name="Text0" Type="PmiText">
+          <Prop Name="Attr0Dt">;24960</Prop>
+          <Prop Name="X">10</Prop>
+          <Prop Name="Y">50</Prop>
+          <Prop Name="Dx">50</Prop>
+          <Prop Name="Dy">25</Prop>
+          <Prop Name="DrawBg">1</Prop>
+          <Prop Name="ColorItem">transparent</Prop>
+          <Prop Name="BorderWidth">0</Prop>
+          <Prop Name="BorderType">1</Prop>
+          <Prop Name="BorderContrast">60</Prop>
+          <Prop Name="GradientEnabled">1</Prop>
+          <Prop Name="GradientContrast">15</Prop>
+          <Prop Name="GradientDirection">2</Prop>
+          <Props Name="Text">
+            <Prop Name="Value">
+              <DStatic>10</DStatic>
+              <DBind Type="GP">
+                <Prop Name="Value">..;GetPar("min")</Prop>
+              </DBind>
+            </Prop>
+            <Prop Name="FontText">PmMiddle</Prop>
+            <Prop Name="AlignHor">0</Prop>
+            <Prop Name="AlignVer">1</Prop>
+          </Props>
+          <Prop Name="ValueDataType">1</Prop>
+          <Prop Name="ValueFormatType">0</Prop>
+          <Prop Name="ValueFormat">%.2f</Prop>
+          <Prop Name="ValueMin">0;0</Prop>
+          <Prop Name="ValueMax">100;0</Prop>
+          <Prop Name="EditAttr">0</Prop>
+          <Prop Name="ShadowType">0</Prop>
+          <Prop Name="ShadowColor">#808080</Prop>
+        </GItem>
+      </GPanel>
+      <PmObjects/>
+    </PmObject>
+    <PmObject Name="_Note" Type="PmPanel">
+      <Prop Name="DisabledInRt">0</Prop>
+      <Prop Name="LastEditTime">2019.01.15 08:07:30</Prop>
+      <Prop Name="MacroPars"></Prop>
+      <Prop Name="MemberOfLogicalGroups">menu</Prop>
+      <Prop Name="ReferenceType">0</Prop>
+      <Prop Name="ReferenceName"></Prop>
+      <Events Name="PmEvents">
+        <Event Name="onStart" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onStop" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onOpen" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onClose" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onRefresh" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onFocusIn" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onFocusOut" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onKeyPress" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+        <Event Name="onMousePress" Type="Pm">
+          <Script><![CDATA[]]></Script>
+        </Event>
+      </Events>
+      <Methods/>
+      <Prop Name="Title">Note</Prop>
+      <Prop Name="Help"></Prop>
+      <Prop Name="Options"></Prop>
+      <Prop Name="Params"></Prop>
+      <Prop Name="ScriptEngine">javascript</Prop>
+      <Prop Name="View2AppLevel">client</Prop>
+      <Prop Name="MultiView">1</Prop>
+      <Prop Name="KeyCodeOpen">0</Prop>
+      <Props Name="AccessList">
+        <Prop Name="Style">0</Prop>
+        <List Name="Actions">
+          <Props Name="PanelClose">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+          <Props Name="PanelOpen">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+          <Props Name="WebMethods">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+          <Props Name="WebRead">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+          <Props Name="WebWrite">
+            <Prop Name="Users">$OPER</Prop>
+          </Props>
+        </List>
+      </Props>
+      <Props Name="WebServer">
+        <Prop Name="Enable">1</Prop>
+        <Prop Name="Id">$.expr("pMe.Name")</Prop>
+        <Prop Name="Server">/Z45AppCore/Web</Prop>
+        <Prop Name="AddToList">0</Prop>
+        <Prop Name="RefreshErrMode">0</Prop>
+        <Prop Name="RefreshPeriod">0.5</Prop>
+      </Props>
+      <GPanel ver="80327">
+        <Prop Name="Dx">640</Prop>
+        <Prop Name="Dy">480</Prop>
+        <Props Name="LocalProps">
+          <Prop Name="BackgroundColor">#c0c0c0</Prop>
+          <Prop Name="FocusColor">#000000</Prop>
+        </Props>
+        <Props Name="Params">
+          <Prop Name="tagPath" Type="par">tag</Prop>
+        </Props>
+        <GItem Name="Edit0" Type="PmiWEdit">
+          <Prop Name="X">10</Prop>
+          <Prop Name="Y">10</Prop>
+          <Prop Name="Dx">620</Prop>
+          <Prop Name="Dy">420</Prop>
+          <Prop Name="ColorItem">#ffffff</Prop>
+          <Prop Name="FontText">PmMiddle</Prop>
+          <Prop Name="Value">
+            <DStatic>Text</DStatic>
+            <DBind Type="GP">
+              <Prop Name="Value">.;Vars("Note")</Prop>
+            </DBind>
+          </Prop>
+          <Prop Name="AlignHor">0</Prop>
+          <Prop Name="AttrEdit">16421</Prop>
+          <Prop Name="AttrEditEx">7</Prop>
+          <Prop Name="WndBorderType">3</Prop>
+          <Props Name="LocalProps">
+            <Prop Name="Note" Type="string">
+              <DStatic Type="string"></DStatic>
+              <DBind Type="PP">
+                <Prop Name="Value">$.par("tagPath");Value</Prop>
+              </DBind>
+            </Prop>
+          </Props>
+          <Event Name="onDataEditAccept" Type="Pm">
+            <Script>
+              <![CDATA[
+pMe.Vars("Note").Value = pMe.Value;
+]]>
+            </Script>
+          </Event>
+        </GItem>
+        <GItem Name="Butt" Type="PmiButton">
+          <Prop Name="X">540</Prop>
+          <Prop Name="Y">440</Prop>
+          <Prop Name="Dx">90</Prop>
+          <Prop Name="Dy">30</Prop>
+          <Prop Name="ColorItem">#c0c0c0</Prop>
+          <Prop Name="BorderWidth">2</Prop>
+          <Prop Name="BorderContrast">60</Prop>
+          <Prop Name="GradientEnabled">1</Prop>
+          <Prop Name="GradientContrast">15</Prop>
+          <Prop Name="GradientDirection">0</Prop>
+          <Prop Name="BnAttributes">4</Prop>
+          <Prop Name="ImageSrv"></Prop>
+          <Prop Name="ImageOper">0</Prop>
+          <Props Name="Text">
+            <Prop Name="StringText">Save</Prop>
+            <Prop Name="FontText">PmMiddle</Prop>
+            <Prop Name="AlignHor">1</Prop>
+            <Prop Name="AlignVer">1</Prop>
+          </Props>
+          <Event Name="onButtonUp" Type="Pm">
+            <Script>
+              <![CDATA[
+pMe.Root.Close("ok");
+]]>
+            </Script>
+          </Event>
+        </GItem>
+        <GItem Name="Butt0" Type="PmiButton">
+          <Prop Name="X">440</Prop>
+          <Prop Name="Y">440</Prop>
+          <Prop Name="Dx">90</Prop>
+          <Prop Name="Dy">30</Prop>
+          <Prop Name="ColorItem">#c0c0c0</Prop>
+          <Prop Name="BorderWidth">2</Prop>
+          <Prop Name="BorderContrast">60</Prop>
+          <Prop Name="GradientEnabled">1</Prop>
+          <Prop Name="GradientContrast">15</Prop>
+          <Prop Name="GradientDirection">0</Prop>
+          <Prop Name="BnAttributes">4</Prop>
+          <Prop Name="ImageSrv"></Prop>
+          <Prop Name="ImageOper">0</Prop>
+          <Props Name="LocalProps">
+            <Prop Name="Note" Type="string">
+              <DStatic Type="string"></DStatic>
+              <DBind Type="GP">
+                <Prop Name="Value">/Edit0;Value</Prop>
+              </DBind>
+            </Prop>
+          </Props>
+          <Props Name="Text">
+            <Prop Name="StringText">Clear</Prop>
+            <Prop Name="FontText">PmMiddle</Prop>
+            <Prop Name="AlignHor">1</Prop>
+            <Prop Name="AlignVer">1</Prop>
+          </Props>
+          <Event Name="onButtonUp" Type="Pm">
+            <Script>
+              <![CDATA[
+pMe.Vars("Note").Value = "";
+pMe.Root.Close("ok");
+]]>
+            </Script>
+          </Event>
+        </GItem>
+      </GPanel>
+      <PmObjects/>
+    </PmObject>
+  </PmObjects>
+</PmObject>

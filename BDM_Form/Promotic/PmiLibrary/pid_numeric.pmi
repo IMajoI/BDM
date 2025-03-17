@@ -306,7 +306,7 @@ ctx.fillText(Mode, dx * 0.9, dy - borderLine);]]></Script>
 						<Script><![CDATA[var qBorderSize = dy * 0.09;
 var quality = pEvent.GetVar("quality").Value;
 
-if(quality !== 192 || pEvent.GetVar("HMI_OutOfSrv").Value)
+if(quality !== 192)
 {
     ctx.beginPath();
     ctx.lineWidth = qBorderSize;

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Document Load="Auto">
 	<Cfg Name="Default">
-		<Content ver="80323">
-			<GItem Name="Canvas14" Type="PmiCanvas">
+		<Content ver="80327">
+			<GItem Name="Canvas7" Type="PmiCanvas">
 				<Prop Name="EnabledInRt">1</Prop>
 				<Prop Name="EnabledInPanel">1</Prop>
 				<Prop Name="EnabledInWeb">1</Prop>
 				<Prop Name="EnabledInPrint">1</Prop>
 				<Prop Name="Attr0Dt">;24960</Prop>
-				<Prop Name="X">1100</Prop>
-				<Prop Name="Y">200</Prop>
+				<Prop Name="X">670</Prop>
+				<Prop Name="Y">60</Prop>
 				<Prop Name="Dx">60</Prop>
 				<Prop Name="Dy">60</Prop>
 				<Props Name="Params">
-					<Prop Name="tagName" Type="par">vsd1</Prop>
+					<Prop Name="tagName" Type="par">onoffvsd</Prop>
 					<Prop Name="type" Type="par">3</Prop>
 				</Props>
 				<Prop Name="ToolTip">

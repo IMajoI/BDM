@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Document Load="Auto">
 	<Cfg Name="Default">
-		<Content ver="80323">
-			<GItem Name="Canvas0" Type="PmiCanvas">
+		<Content ver="80327">
+			<GItem Name="Canvas" Type="PmiCanvas">
 				<Prop Name="EnabledInRt">1</Prop>
 				<Prop Name="EnabledInPanel">1</Prop>
 				<Prop Name="EnabledInWeb">1</Prop>
 				<Prop Name="EnabledInPrint">1</Prop>
 				<Prop Name="Attr0Dt">;24960</Prop>
-				<Prop Name="X">50</Prop>
-				<Prop Name="Y">200</Prop>
+				<Prop Name="X">650</Prop>
+				<Prop Name="Y">290</Prop>
 				<Prop Name="Dx">100</Prop>
 				<Prop Name="Dy">350</Prop>
 				<Props Name="Params">
-					<Prop Name="tagName" Type="par">ain1</Prop>
-					<Prop Name="fraction" Type="par">2</Prop>
+					<Prop Name="tagName" Type="par">ain</Prop>
+					<Prop Name="fraction" Type="par">3</Prop>
 				</Props>
 				<Prop Name="ToolTip">
 					<DStatic></DStatic>
@@ -467,11 +467,7 @@ var Alarm = pEvent.GetVar("AnyAl").Value;
 var ALAck = pEvent.GetVar("AnyAck").Value;
 var AlInhibit = pEvent.GetVar("AlarmLInhibit").Value || pEvent.GetVar("AlarmLLInhibit").Value || pEvent.GetVar("AlarmHInhibit").Value || pEvent.GetVar("AlarmHHInhibit").Value;
 
-if(AlInhibit)
-{
-    ctx.fillStyle = alInhColor;
-}
-else if(Alarm && ALAck)
+if(Alarm && ALAck)
 {
     ctx.fillStyle = blink ? alActColor : alNormalColor;
 }
@@ -482,6 +478,10 @@ else if(Alarm && !ALAck)
 else if(!Alarm && ALAck)
 {
     ctx.fillStyle = blink ? alUnackColor : alNormalColor;
+}
+else if(AlInhibit)
+{
+    ctx.fillStyle = alInhColor;
 }
 else
 {
@@ -680,6 +680,7 @@ var Unit = pEvent.GetVar("Unit").Value;
 var vFontSize = Pm.Round(dy * 0.075, 1) > 26 ? 26 :Pm.Round(dy * 0.075, 1);
 var barSpaceY = dy * 0.25 / 3.5;
 var vBarSpaceY = dy * 0.28 / 3.5;
+var fraction = pEvent.GetVar("fraction").Value;
 
 ctx.strokeStyle = "black";
 ctx.fillStyle = "black";
@@ -706,7 +707,7 @@ var blink = pEvent.GetVar("blink").Value;
 var Min = pEvent.GetVar("Min").Value;
 var Max = pEvent.GetVar("Max").Value;
 var fraction = pEvent.GetVar("fraction").Value;
-var Value =  Pm.Round(pEvent.GetVar("Value").Value, 1 / Pm.Pow(10, fraction));
+var Value =  Pm.StringFormat("%." + fraction +"f", Pm.Round(pEvent.GetVar("Value").Value, 1 / Pm.Pow(10, fraction)));
 
 pEvent.Methods.Alarm(ctx, dx, dy, blink);
 pEvent.Methods.Background(ctx, dx, dy);

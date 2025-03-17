@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -9,13 +11,154 @@ using System.Xml.Serialization;
 
 namespace BDMdata
 {
+    #region GlobalData
+    /// <summary>
+    /// Global data - used in whole project
+    /// </summary>
+    public class GData
+    {
+        public BDMdataClass Data = new BDMdataClass();           //Full data, as a backup for filtering and sorting
+        public BDMdataClass DataFiltered = new BDMdataClass();   //Used data for generating and binded to datagridview on MAIN tab, at start are same as Data
+        public List<AObjectType> AObjectTypes { get; set; }     // Archestra object mapping information
+        public BindingList<DBMapDef> DBMappingRef { get; set; } // Data block mapping information
+        private string tempFile = Path.GetTempPath();
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public GData()
+        {
+            AObjectTypes = new List<AObjectType>();
+            DBMappingRef = new BindingList<DBMapDef>();
+            //At beggining load data and copy to datafiltered
+            Data.LoadDeSerialized();
+            CopyBDM(true);
+
+        }
+        public void CopyBDM(bool direction)
+        {
+            //copy data to filtereddata
+            if (direction)
+            {
+                DataFiltered.Objects.Clear();
+                foreach (var obj in Data.Objects)
+                {
+                    DataFiltered.Objects.Add(obj);
+                }
+            }
+            //copy filtereddata to data
+            else
+            {
+                Data.Objects.Clear();
+                foreach (var obj in DataFiltered.Objects)
+                {
+                    Data.Objects.Add(obj);
+                }
+            }
+        }
+
+        public void SerializeDataTypes()
+        {
+            using (var writer = new StreamWriter("XMLSources/AObjectTypes.xml"))
+            {
+                var serializer = new XmlSerializer(AObjectTypes.GetType());
+                serializer.Serialize(writer, AObjectTypes);
+                writer.Flush();
+            }
+        }
+        public void SerializeDataTypes(string path)
+        {
+            using (var writer = new StreamWriter(path))
+            {
+                var serializer = new XmlSerializer(AObjectTypes.GetType());
+                serializer.Serialize(writer, AObjectTypes);
+                writer.Flush();
+            }
+        }
+
+        public void DeserializeDataTypes()
+        {
+            try
+            {
+                if (File.Exists("XMLSources/AObjectTypes.xml"))
+                {
+                    XmlSerializer serializer = new XmlSerializer(AObjectTypes.GetType());
+                    using (StreamReader sr = new StreamReader("XMLSources/AObjectTypes.xml"))
+                    {
+                        AObjectTypes = (List<AObjectType>)serializer.Deserialize(sr);
+                    }
+                }
+                else
+                {
+                    throw new FileNotFoundException("File not found!");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        public void DeserializeDataTypes(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    XmlSerializer serializer = new XmlSerializer(AObjectTypes.GetType());
+                    using (StreamReader sr = new StreamReader(path))
+                    {
+                        AObjectTypes = (List<AObjectType>)serializer.Deserialize(sr);
+                    }
+                }
+                else
+                {
+                    throw new FileNotFoundException("File not found!");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        public BindingList<string> aotToString()
+        {
+            BindingList<string> ListDataTypes = new BindingList<string>();
+            foreach (var item in AObjectTypes)
+            {
+                try
+                {
+                    ListDataTypes.Add(item.DataTypeName.ToString());
+                }
+                catch
+                {
+                }
+
+            }
+            return ListDataTypes;
+        }
+        public void GetDBMapping()
+        {
+            DBMappingRef.Clear();
+            foreach (var item in DataFiltered.Objects)
+            {
+                if (DBMappingRef.ToList<DBMapDef>().Find(x => x.DBName == item.DBName) == null)
+                {
+                    DBMapDef DBMD = new DBMapDef(item.DBName, item.DBNr, 0.ToString());
+                    DBMappingRef.Add(DBMD);
+                }
+            }
+        }
+
+    }
+    #endregion
+
     [Serializable]
     public class BDMdataClass
     {
         public BindingList<BasicObject> Objects { get; set; }   //list of basicobjects which represents rows in component list
-        public int Count { get { return Objects.Count; } }      //count of objects/rows
+        //(IDictionary<string, Object>
+        public int Count { get { return Objects.Count; } }      //count of objects/rows        
 
-        private string tempFile = Path.GetTempPath() + @"\bdm.xml"; //location of temp bdm.xml file
+        private string tempFile = Path.GetTempPath() + @"\bdm.xml"; //location of temp bdm.xml file        
 
         /// <summary>
         /// Constructor
@@ -32,12 +175,11 @@ namespace BDMdata
         {
             using (var writer = new StreamWriter(tempFile))
             {
-                var serializer = new XmlSerializer(GetType());
-                serializer.Serialize(writer, this);
+                var serializer = new XmlSerializer(Objects.GetType());
+                serializer.Serialize(writer, Objects);
                 writer.Flush();
             }
         }
-
         /// <summary>
         /// Serialize and save to desired location
         /// </summary>
@@ -53,8 +195,8 @@ namespace BDMdata
             {
                 using (var writer = new StreamWriter(sfd.FileName))
                 {
-                    var serializer = new XmlSerializer(GetType());
-                    serializer.Serialize(writer, this);
+                    var serializer = new XmlSerializer(Objects.GetType());
+                    serializer.Serialize(writer, Objects);
                     writer.Flush();
                 }
                 success = true;
@@ -72,14 +214,8 @@ namespace BDMdata
             {
                 using (var stream = File.OpenRead(tempFile))
                 {
-                    var serializer = new XmlSerializer(GetType());
-                    BDMdataClass tempdata = serializer.Deserialize(stream) as BDMdataClass;
-                    Objects.Clear();
-
-                    foreach (var obj in tempdata.Objects)
-                    {
-                        Objects.Add(obj);
-                    }
+                    var serializer = new XmlSerializer(Objects.GetType());
+                    Objects = serializer.Deserialize(stream) as BindingList<BasicObject>;
                 }
             }
             catch { }
@@ -101,20 +237,13 @@ namespace BDMdata
                 {
                     using (var stream = File.OpenRead(ofd.FileName))
                     {
-                        var serializer = new XmlSerializer(GetType());
-                        BDMdataClass tempdata = serializer.Deserialize(stream) as BDMdataClass;
-                        Objects.Clear();
-
-                        foreach (var obj in tempdata.Objects)
-                        {
-                            Objects.Add(obj);
-                        }
+                        var serializer = new XmlSerializer(Objects.GetType());
+                        Objects = serializer.Deserialize(stream) as BindingList<BasicObject>;
                     }
                     success = true;
                 }
                 catch { }
             }
-
             return success;
         }
 
@@ -130,12 +259,34 @@ namespace BDMdata
 
             corruptedObjs.AddRange(BadTagName());       //TagName check
             corruptedObjs.AddRange(BadDataType());      //DataType check
-            corruptedObjs.AddRange(BadDBName());        //DBName check
+            corruptedObjs.AddRange(MissingDBInfo());    //Missing DBNr or PositionInDB
 
             if (corruptedObjs.Count == 0)
                 corruptedObjs = null;
 
             return corruptedObjs;
+        }
+
+        /// <summary>
+        /// Check if DBNr and PosInDB is set
+        /// </summary>
+        /// <returns></returns>
+        private List<InvalidObject> MissingDBInfo()
+        {
+            List<InvalidObject> list = new List<InvalidObject>();
+
+            foreach (var obj in Objects)
+            {
+                //check empty DBNr
+                if (obj.DBNr == "")
+                    list.Add(new InvalidObject("DBNr", obj.DBNr));
+
+                //check empty PositionInDB
+                if (obj.PositionInDB == "")
+                    list.Add(new InvalidObject("PositionInDB", obj.PositionInDB));
+            }
+
+            return list;
         }
 
         /// <summary>
@@ -176,7 +327,9 @@ namespace BDMdata
             List<InvalidObject> list = new List<InvalidObject>();
 
             //build condition from resource to fit datatype with tiaportal lib datatypes
-            Regex regEx = new Regex(Resource.AinType + "|" +
+            Regex regEx = new Regex(Resource.Bool + "|" +
+                                    Resource.Int + "|" +
+                                    Resource.AinType + "|" +
                                     Resource.AnalogPosType + "|" +
                                     Resource.AoutType + "|" +
                                     Resource.DiagCPU1500 + "|" +
@@ -190,8 +343,9 @@ namespace BDMdata
                                     Resource.OnOffType + "|" +
                                     Resource.OnOffVSDType + "|" +
                                     Resource.PIDType + "|" +
+                                    Resource.PIDStepType + "|" +
                                     Resource.PreselType + "|" +
-                                    Resource.SeqDataType);  
+                                    Resource.SeqDataType);
 
             foreach (var obj in Objects)
             {
@@ -209,50 +363,7 @@ namespace BDMdata
             }
             return list;
         }
-
-        /// <summary>
-        /// Check if DBname values are ok
-        /// </summary>
-        /// <returns></returns>
-        private List<InvalidObject> BadDBName()
-        {
-            List<InvalidObject> list = new List<InvalidObject>();
-
-            //build condition from resource to fit datatype with tiaportal lib datatypes
-            Regex regEx = new Regex("^" + Resource.AinType.ToLower() + "$|^" +
-                                    Resource.AnalogPosType.ToLower() + "$|^" +
-                                    Resource.AoutType.ToLower() + "$|^" +
-                                    Resource.DiagCPU1500.ToLower() + "$|^" +
-                                    Resource.DiagCPU300.ToLower() + "$|^" +
-                                    Resource.DiagDev1500.ToLower() + "$|^" +
-                                    Resource.DiagDev300.ToLower() + "$|^" +
-                                    Resource.DinType.ToLower() + "$|^" +
-                                    Resource.DoutType.ToLower() + "$|^" +
-                                    Resource.GrpType.ToLower() + "$|^" +
-                                    Resource.OnOff2DType.ToLower() + "$|^" +
-                                    Resource.OnOffType.ToLower() + "$|^" +
-                                    Resource.OnOffVSDType.ToLower() + "$|^" +
-                                    Resource.PIDType.ToLower() + "$|^" +
-                                    Resource.PreselType.ToLower() + "$|^" +
-                                    Resource.SeqDataType.ToLower() + "$");
-
-            foreach (var obj in Objects)
-            {
-                //if dbname has no value
-                if (obj.DBName == " ")
-                {
-                    list.Add(new InvalidObject("DBName", obj.DBName));
-                }
-                else
-                {
-                    //if dbname mach with any of valid types
-                    if (regEx.Match(obj.DBName.ToLower()).Success)
-                        list.Add(new InvalidObject("DBName", obj.DBName));
-                }
-            }
-            return list;
-        }
-        #endregion
+        #endregion        
     }
 
     [Serializable]
@@ -260,13 +371,13 @@ namespace BDMdata
     {
         //method to get property by name
         public string GetPropValue(string propName)
-        { 
+        {
             return GetType().GetProperty(propName).GetValue(this, null).ToString();
         }
 
         public string TagName { get; set; } = " ";
         public string Descr { get; set; } = " ";
-        public string DataType { get; set; } = " ";
+        public string DataType { get; set; } = "empty";
         public string DBNr { get; set; } = " ";
         public string PositionInDB { get; set; } = " ";
         public string DBName { get; set; } = " ";
@@ -318,6 +429,9 @@ namespace BDMdata
         public string IOAddress { get; set; } = " ";
         public string HMIArea { get; set; } = " ";
         public string HMIparrent { get; set; } = " ";
+        public string ValueDecimalPlaces { get; set; } = " ";
+        public string HMI_HWSigFault_severity { get; set; } = " ";
+        public string SecurityDefinition { get; set; } = " ";
 
         /// <summary>
         /// Constructor
@@ -341,4 +455,99 @@ namespace BDMdata
             Value = val;
         }
     }
+
+    #region Public structure DB mapping
+    /// <summary>
+    /// Ctructure to define DB name db number and initial DB offset
+    /// </summary>
+    public class DBMapDef
+    {
+        public string DBName { get; set; }
+        public string DBnr { get; set; }
+        public string DBOffset { get; set; }
+        public DBMapDef()
+        {
+        }
+        public DBMapDef(string dbname, string dbnr, string dboffset)
+        {
+            DBName = dbname;
+            DBnr = dbnr;
+            DBOffset = dboffset;
+        }
+
+    }
+    #endregion
+    public class DataTypeProperties
+    {
+        public string propertyName { get; set; }
+        public string propertyColumn { get; set; }
+    }
+
+
+    public class AObjectType
+    {
+        public string DataTypeName { get; set; }
+        public string DataTypeSize { get; set; }
+        public string FunctionName { get; set; }
+        public string Template { get; set; }
+        public BindingList<ATopicParametr> Attributes { get; set; }
+        public BindingList<DataTypeProperties> DTProperties { get; set; }
+        public BindingList<AGalaxyParametr> GalaxyAttributes { get; set; }
+        public AObjectType()
+        {
+            Attributes = new BindingList<ATopicParametr>();
+            GalaxyAttributes = new BindingList<AGalaxyParametr>();
+        }
+        public AObjectType(string name, string size)
+        {
+            DataTypeName = name;
+            DataTypeSize = size;
+            Attributes = new BindingList<ATopicParametr>();
+            GalaxyAttributes = new BindingList<AGalaxyParametr>();
+        }
+        public override string ToString()
+        {
+            return DataTypeName;
+        }
+    }
+
+    public class ATopicParametr
+    {
+        public string AttributeName { get; set; }
+        public string DataType { get; set; }
+
+        public ATopicParametr()
+        {
+        }
+
+        public ATopicParametr(string attributename, string datatype)
+        {
+            AttributeName = attributename;
+            DataType = datatype;
+        }
+    }
+    public class AGalaxyParametr
+    {
+        public string AttributeName { get; set; }
+
+        public string propertyColumn { get; set; }
+        public AGalaxyParametr()
+        {
+        }
+        public AGalaxyParametr(string pAttributeName)
+        {
+            AttributeName = pAttributeName;
+        }
+    }
+    
+
+    public class HeaderCls
+    {
+
+        public string HeaderName { get; set; }
+        public bool Visible { get; set; }
+
+
+    }
+
 }

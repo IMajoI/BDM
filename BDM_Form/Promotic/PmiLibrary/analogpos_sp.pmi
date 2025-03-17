@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Document Load="Auto">
 	<Cfg Name="Default">
-		<Content ver="80323">
-			<GItem Name="Canvas6" Type="PmiCanvas">
+		<Content ver="80327">
+			<GItem Name="Canvas0" Type="PmiCanvas">
 				<Prop Name="EnabledInRt">1</Prop>
 				<Prop Name="EnabledInPanel">1</Prop>
 				<Prop Name="EnabledInWeb">1</Prop>
 				<Prop Name="EnabledInPrint">1</Prop>
 				<Prop Name="Attr0Dt">;24960</Prop>
-				<Prop Name="X">800</Prop>
+				<Prop Name="X">110</Prop>
 				<Prop Name="Y">130</Prop>
 				<Prop Name="Dx">130</Prop>
 				<Prop Name="Dy">30</Prop>
 				<Props Name="Params">
-					<Prop Name="tagName" Type="par">analog1</Prop>
+					<Prop Name="tagName" Type="par">analog</Prop>
 				</Props>
 				<Prop Name="ToolTip">
 					<DStatic></DStatic>
@@ -205,7 +205,7 @@ pMe.GetChildByIndex(0).Visible = Pm.StringLen(pMe.Vars("Note").Value) > 0 ? true
 					<Script><![CDATA[if(pEvent.Action === 0)
 {
     var sPos = "pos:view," + (pMe.X+pMe.Dx) + "," + pMe.Y + ";";
-    pMe.PmPanel.OpenView("/Z45AppCore/Z45_Graphics/_SP", "target:_blank;" + sPos, "par:tagPath=/Z45AppCore/AnalogPosCtrlData/" + pMe.GetPar("tagName") + "/#vars/CmdValue;");
+    pMe.PmPanel.OpenView("/Z45AppCore/Z45_Graphics/_SP", "target:_blank;" + sPos, "par:tagPath=/Z45AppCore/AnalogPosCtrlData/" + pMe.GetPar("tagName") + "/#vars/CmdValue;par:min=0;par:max=100");
 }
 ]]></Script>
 				</Event>
@@ -329,7 +329,7 @@ ctx.strokeStyle = "black";
 ctx.fillStyle = "black";
 ctx.font = vFontSize + "px arial";
 ctx.textAlign = "center";
-ctx.fillText(CmdValue + "%", dx/2, vFontSize);]]></Script>
+ctx.fillText(CmdValue + " %", dx/2, vFontSize);]]></Script>
 					</Method>
 					<Method Name="Control">
 						<Prop Name="Params">ctx,dx,dy</Prop>
