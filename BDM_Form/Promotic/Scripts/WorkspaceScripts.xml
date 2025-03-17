@@ -1,8 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Root>
+<SetValueTrue>
+  <![CDATA[pMe.Vars("Value") = true;]]>
+</SetValueTrue>
 
-  <MenuOnStartEvent>
+<MenuInitMethod>
     <![CDATA[
+
 //Initialization
 var ctr = 0;
 pMe.Vars("titles").Value = "";
@@ -12,6 +16,7 @@ var aAlphabet = Pm.StringSplit(pMe.Vars("Alphabet").Value, ";","empty:1;");
 
 //get pathes of main panels and sub panels
 var aPathes = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:path;");
+var aTitles = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:title;");
 
 for(var a = 0; a < aAlphabet.GetSize(1); a++)
 {
@@ -19,7 +24,8 @@ for(var a = 0; a < aAlphabet.GetSize(1); a++)
     {
         if(Pm.StringFind(aPathes.GetItem(0,i), "Z45_Panels/" + aAlphabet.GetItem(a) + "0", 0) > 0)
         {
-            pMe.Vars("titles").Value = pMe.Vars("titles").Value + Pm.StringSub(aPathes.GetItem(0,i), 12) + ";";
+            pMe.Vars("titles").Value = pMe.Vars("titles").Value + aTitles.GetItem(0,i) + ";";
+            pMe.Vars("names").Value = pMe.Vars("names").Value + Pm.StringSub(aPathes.GetItem(0,i), 12) + ";";
             pMe.Vars("pathes").Value = pMe.Vars("pathes").Value + aPathes.GetItem(0,i) + ";";
             pMe.Vars("Stripes").Value = pMe.Vars("Stripes").Value + "0;";
             ctr++;
@@ -50,11 +56,11 @@ for(var i = 0; i < aAlphabet.GetSize(1); i++)
 //set default page open on start
 
 var aPathes = Pm.StringSplit(pMe.Vars("pathes").Value, ";","empty:1;");
-var aTitles = Pm.StringSplit(pMe.Vars("titles").Value, ";","empty:1;");
+var aNames = Pm.StringSplit(pMe.Vars("names").Value, ";","empty:1;");
 
 //Open panel
 pMe.PmPanel.OpenView(aPathes.GetItem(pMe.GetPar("DefaultPanel")), "target:main");
-var title = aTitles.GetItem(0);
+var name = aNames.GetItem(0);
 
 //Set pointer to selected panel
 pMe.Vars("selMain").Value = pMe.GetPar("DefaultPanel");
@@ -63,14 +69,15 @@ pMe.Vars("selSub").Value = 1000;
 //get subpathes and subtitles
 var ctr = 0;
 var aSubPathes = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:path;");
+var aSubTitles = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:title;");
 
 for(var a = 1; a < 16; a++)
 {
     for(var i = 0; i < aSubPathes.GetSize(2); i++)
     {
-        if(Pm.StringFind(aSubPathes.GetItem(0,i), "Z45_Panels/" + Pm.StringSub(title, 0, 1) + a, 0) > 0)
+        if(Pm.StringFind(aSubPathes.GetItem(0,i), "Z45_Panels/" + Pm.StringSub(name, 0, 1) + a, 0) > 0)
         {
-            pMe.Vars("subTitles").Value = pMe.Vars("subTitles").Value + Pm.StringSub(aSubPathes.GetItem(0,i), 12) + ";";
+            pMe.Vars("subTitles").Value = pMe.Vars("subTitles").Value + aSubTitles.GetItem(0,i) + ";";
             pMe.Vars("subPathes").Value = pMe.Vars("subPathes").Value + aSubPathes.GetItem(0,i) + ";";
             ctr++;
         }
@@ -78,6 +85,13 @@ for(var a = 1; a < 16; a++)
 }
 
 pMe.Vars("subTitlesWidth").Value = ctr > 6 ? pMe.Dx / ctr : pMe.Dx / 6;
+
+]]>
+</MenuInitMethod>  
+    
+  <MenuOnStartEvent>
+    <![CDATA[
+pMe.Methods.Init();
 ]]>
 </MenuOnStartEvent>
   
@@ -90,6 +104,7 @@ pMe.Vars("blink").Value = !pMe.Vars("blink").Value;
 
 <MenuOnMousePressEvent>
 <![CDATA[
+
 //left click release on main menu
 if (pEvent.Action === 0 && pEvent.Y < pMe.Dy/2)
 {
@@ -109,34 +124,40 @@ if (pEvent.Action === 0 && pEvent.Y < pMe.Dy/2)
     }while(sum1 < pEvent.X)
     
     var aPathes = Pm.StringSplit(pMe.Vars("pathes").Value, ";","empty:1;");
-    var aTitles = Pm.StringSplit(pMe.Vars("titles").Value, ";","empty:1;");
+    var aNames = Pm.StringSplit(pMe.Vars("names").Value, ";","empty:1;");
     
     //Open panel
-    pMe.PmPanel.OpenView(aPathes.GetItem(elementMain-1), "target:main");
-    var title = aTitles.GetItem(elementMain-1);
     
-    //Set pointer to selected panel
-    pMe.Vars("selMain").Value = elementMain - 1;
-    pMe.Vars("selSub").Value = 1000;
-    
-    //get subpathes and subtitles
-    var ctr = 0;
-    var aSubPathes = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:path;");
-    
-    for(var a = 1; a < 16; a++)
+    if(Pm.StringSub(aPathes.GetItem(elementMain-1), 0, 1) === "/")
     {
-        for(var i = 0; i < aSubPathes.GetSize(2); i++)
+        pMe.PmPanel.OpenView(aPathes.GetItem(elementMain-1), "target:main");
+        var name = aNames.GetItem(elementMain-1);
+        
+        //Set pointer to selected panel
+        pMe.Vars("selMain").Value = elementMain - 1;
+        pMe.Vars("selSub").Value = 1000;
+        
+        //get subpathes and subtitles
+        var ctr = 0;
+        var aSubPathes = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:path;");
+        var aSubTitles = Pm.FindViewers("groups:menu;viewers:panel;","", "columns:title;");
+        
+        for(var a = 1; a < 16; a++)
         {
-            if(Pm.StringFind(aSubPathes.GetItem(0,i), "Z45_Panels/" + Pm.StringSub(title, 0, 1) + a, 0) > 0)
+            for(var i = 0; i < aSubPathes.GetSize(2); i++)
             {
-                pMe.Vars("subTitles").Value = pMe.Vars("subTitles").Value + Pm.StringSub(aSubPathes.GetItem(0,i), 12) + ";";
-                pMe.Vars("subPathes").Value = pMe.Vars("subPathes").Value + aSubPathes.GetItem(0,i) + ";";
-                ctr++;
+                if(Pm.StringFind(aSubPathes.GetItem(0,i), "Z45_Panels/" + Pm.StringSub(name, 0, 1) + a, 0) > 0)
+                {
+                    //pMe.Vars("subTitles").Value = pMe.Vars("subTitles").Value + Pm.StringSub(aSubPathes.GetItem(0,i), 12) + ";";
+                    pMe.Vars("subTitles").Value = pMe.Vars("subTitles").Value + aSubTitles.GetItem(0,i) + ";";
+                    pMe.Vars("subPathes").Value = pMe.Vars("subPathes").Value + aSubPathes.GetItem(0,i) + ";";
+                    ctr++;
+                }
             }
         }
+        
+        pMe.Vars("subTitlesWidth").Value = ctr > 6 ? pMe.Dx / ctr : pMe.Dx / 6;
     }
-    
-    pMe.Vars("subTitlesWidth").Value = ctr > 6 ? pMe.Dx / ctr : pMe.Dx / 6;
 }
 
 //left click release on sub menu
@@ -153,11 +174,15 @@ if (pEvent.Action === 0 && pEvent.Y > pMe.Dy/2)
         elementSub++;
     }while(sum2 < pEvent.X)
     
-    pMe.PmPanel.OpenView(aSubPathes.GetItem(elementSub-1), "target:main");
+    if(Pm.StringSub(aSubPathes.GetItem(elementSub-1), 0, 1) === "/")
+    {
+        pMe.PmPanel.OpenView(aSubPathes.GetItem(elementSub-1), "target:main");
     
-    //Set pointer to selected panel
-    pMe.Vars("selSub").Value = elementSub - 1;
+        //Set pointer to selected panel
+        pMe.Vars("selSub").Value = elementSub - 1;
+    }
 }
+
 ]]>
 </MenuOnMousePressEvent>
   

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Document Load="Auto">
 	<Cfg Name="Default">
-		<Content ver="80323">
+		<Content ver="80327">
 			<GItem Name="Panel" Type="PmiPanel">
 				<Prop Name="EnabledInRt">1</Prop>
 				<Prop Name="EnabledInPanel">1</Prop>
 				<Prop Name="EnabledInWeb">1</Prop>
 				<Prop Name="EnabledInPrint">1</Prop>
 				<Prop Name="Attr0Dt">;24960</Prop>
-				<Prop Name="X">1440</Prop>
-				<Prop Name="Y">140</Prop>
+				<Prop Name="X">740</Prop>
+				<Prop Name="Y">110</Prop>
 				<Prop Name="Dx">130</Prop>
 				<Prop Name="Dy">90</Prop>
 				<Props Name="Params">
-					<Prop Name="tagName" Type="par">pid1</Prop>
+					<Prop Name="tagName" Type="par">pid</Prop>
 				</Props>
 				<Prop Name="ToolTip">
 					<DStatic></DStatic>
@@ -103,6 +103,20 @@ pMe.GetChildByIndex(3).Visible = Pm.StringLen(pMe.Vars("Note").Value) > 0 ? true
 							<DStatic Type="string">black</DStatic>
 							<DBind Type="PP">
 								<Prop Name="Value">/Z45AppCore/Colors/#vars/alNormalColor;Value</Prop>
+								<Prop Name="Reconnect">0</Prop>
+							</DBind>
+						</Prop>
+						<Prop Name="Min" Type="double">
+							<DStatic Type="double">0</DStatic>
+							<DBind Type="PP">
+								<Prop Name="Value">$.join("/Z45AppCore/PIDCtrlData/",$.par("tagName"),"/#vars/Min");Value</Prop>
+								<Prop Name="Reconnect">0</Prop>
+							</DBind>
+						</Prop>
+						<Prop Name="Max" Type="double">
+							<DStatic Type="double">0</DStatic>
+							<DBind Type="PP">
+								<Prop Name="Value">$.join("/Z45AppCore/PIDCtrlData/",$.par("tagName"),"/#vars/Max");Value</Prop>
 								<Prop Name="Reconnect">0</Prop>
 							</DBind>
 						</Prop>
@@ -211,7 +225,7 @@ pMe.GetChildByIndex(3).Visible = Pm.StringLen(pMe.Vars("Note").Value) > 0 ? true
     var sPos = "pos:view," + (pMe.Parent.X+pMe.Parent.Dx) + "," + pMe.Parent.Y + ";";
     if(pMe.Vars("type").Value == 1)
     {  
-        pMe.PmPanel.OpenView("/Z45AppCore/Z45_Graphics/_SP", "target:_blank;" + sPos, "par:tagPath=/Z45AppCore/PIDCtrlData/" + pMe.GetPar("tagName") + "/#vars/ActSP;");
+        pMe.PmPanel.OpenView("/Z45AppCore/Z45_Graphics/_SP", "target:_blank;" + sPos, "par:tagPath=/Z45AppCore/PIDCtrlData/" + pMe.GetPar("tagName") + "/#vars/ActSP;par:min=" + pMe.Vars("Min").Value + ";par:max=" + pMe.Vars("Max").Value +";");
     }
     else
     {
@@ -327,8 +341,7 @@ if(pEvent.GetVar("type").Value == 1)
 						</Method>
 						<Method Name="Value">
 							<Prop Name="Params">ctx,dx,dy</Prop>
-							<Script>
-                <![CDATA[var vFontSize = Pm.Round(dy * 0.8, 1);
+							<Script><![CDATA[var vFontSize = Pm.Round(dy * 0.8, 1);
 var ActSP = Pm.Round(pEvent.GetVar("ActSP").Value, 1 / Pm.Pow(10, 2));
 var ActPV = Pm.Round(pEvent.GetVar("ActPV").Value, 1 / Pm.Pow(10, 2));
 var ValueOut = Pm.Round(pEvent.GetVar("ValueOut").Value, 1 / Pm.Pow(10, 2));
@@ -345,7 +358,7 @@ switch(type)
         Value = ActPV + Unit;
         break;
     case 3:
-        Value = ValueOut + "%";
+        Value = ValueOut + " %";
         break;
 }
 
@@ -615,8 +628,7 @@ if(pEvent.GetVar("type").Value == 1)
 						</Method>
 						<Method Name="Value">
 							<Prop Name="Params">ctx,dx,dy</Prop>
-							<Script>
-                <![CDATA[var vFontSize = Pm.Round(dy * 0.8, 1);
+							<Script><![CDATA[var vFontSize = Pm.Round(dy * 0.8, 1);
 var ActSP = Pm.Round(pEvent.GetVar("ActSP").Value, 1 / Pm.Pow(10, 2));
 var ActPV = Pm.Round(pEvent.GetVar("ActPV").Value, 1 / Pm.Pow(10, 2));
 var ValueOut = Pm.Round(pEvent.GetVar("ValueOut").Value, 1 / Pm.Pow(10, 2));
@@ -633,7 +645,7 @@ switch(type)
         Value = ActPV + Unit;
         break;
     case 3:
-        Value = ValueOut + "%";
+        Value = ValueOut + " %";
         break;
 }
 
@@ -903,8 +915,7 @@ if(pEvent.GetVar("type").Value == 1)
 						</Method>
 						<Method Name="Value">
 							<Prop Name="Params">ctx,dx,dy</Prop>
-							<Script>
-                <![CDATA[var vFontSize = Pm.Round(dy * 0.8, 1);
+							<Script><![CDATA[var vFontSize = Pm.Round(dy * 0.8, 1);
 var ActSP = Pm.Round(pEvent.GetVar("ActSP").Value, 1 / Pm.Pow(10, 2));
 var ActPV = Pm.Round(pEvent.GetVar("ActPV").Value, 1 / Pm.Pow(10, 2));
 var ValueOut = Pm.Round(pEvent.GetVar("ValueOut").Value, 1 / Pm.Pow(10, 2));
@@ -921,7 +932,7 @@ switch(type)
         Value = ActPV + Unit;
         break;
     case 3:
-        Value = ValueOut + "%";
+        Value = ValueOut + " %";
         break;
 }
 

@@ -1,14 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?> 
 <Root>
   
-<AlarmTimer><![CDATA[
+<AlarmTimer>
+  <![CDATA[
 'EXAMPLE
 'dim alarm, alack
 
-'alarm = pMe.Pm("/Z45AppCore/AnalogPosCtrlData/analog1/#vars/AnyAl")
-'alack = pMe.Pm("/Z45AppCore/AnalogPosCtrlData/analog1/#vars/AnyAck") or pMe.Pm("/Z45AppCore/DinData/DIN/#vars/ALAck")
+'alarm = pMe.Pm("/Z45AppCore/AnalogPosCtrlData/analogpos/#vars/AnyAl") or pMe.Pm("/Z45AppCore/DinData/din/#vars/AnyAl")
+'alack = pMe.Pm("/Z45AppCore/AnalogPosCtrlData/analogpos/#vars/AnyAck") or pMe.Pm("/Z45AppCore/DinData/din/#vars/ALAck")
 
 'AlarmStripes.Methods.SetAlarm "Menu", 1, alarm, alack
+
 ]]></AlarmTimer>
   
 <AlarmStripesMethod><![CDATA[

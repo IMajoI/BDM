@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -12,7 +13,9 @@ using BDM_Form;
 using BDMdata;
 using TIAIFCNS;
 using AIFCNS;
-
+using System.Data;
+using Microsoft.Win32;
+using System.Xml.Serialization;
 
 namespace BDM_Form
 {
@@ -23,19 +26,19 @@ namespace BDM_Form
         private BackgroundWorker bw_BuildXMLpart = null;        //bw for build partial xml importing file
         private BackgroundWorker bw_DownloadPmiLibs = null;     //bw for copy pmi resources to have  custom indicators
         private BackgroundWorker bw_DownloadResources = null;   //bw for copy resource pics for faceplates
-
-        private SaveFileDialog saveDialog = new SaveFileDialog();
-
-        private ConnectPLCForm connectForm = new ConnectPLCForm();
-        private Z45TIAIFC TIAIFC;        
-        private List<string> DBnames;
-        string selectedplc;
-
-        private static double progStatus;
-        private static double progStep;
-
+        private ExcelListSelector ELS;
+        private ExcelFileData EF;
+        private int ExcelListIndex;       
+        private SaveFileDialog saveDialog = new SaveFileDialog();                
+        private BindingList<DBMapDef> DBnames;
+        private List<int> InvPtrs = new List<int>();
+        private int InvCtr = 0;       
         private delegate void StatusUpdateHandler(object sender, ProgressEventArgs e);
         private static event StatusUpdateHandler OnUpdateStatus;
+        public GData GlobalData;
+        private BindingList<string> listDataTypes;
+        public static BindingList<HeaderCls> _header;
+        private string path = "";
 
         /// <summary>
         /// Constructor
@@ -43,7 +46,20 @@ namespace BDM_Form
         public FormMain()
         {
             InitializeComponent();
+            GlobalData = new GData();
+            RegistryKey RegK = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Office\\Excel\\Addins\\BDM"); // get instalation path from registry
+            if (RegK != null)
+            {
+                path = RegK.GetValue("Manifest").ToString();
+                path = path.Replace("BDM.vsto", "XMLSources/AObjectTypes.xml"); //|vstolocal
+                path = path.Replace("file:///", "");
+            }
 
+            GlobalData.DeserializeDataTypes(path);
+            listDataTypes = new BindingList<string>();
+            _header = new BindingList<HeaderCls>();
+
+            listChange();
             #region table init
 
             //Bind BDMdata to grid
@@ -71,26 +87,8 @@ namespace BDM_Form
             comboBoxColumn.Name = Resource.Col3;
 
             //list of datatypes
-            List<string> listDataTypes = new List<string> { "empty",
-                                                            Resource.AinType,
-                                                            Resource.DinType,
-                                                            Resource.AoutType,
-                                                            Resource.DoutType,
-                                                            Resource.AnalogPosType,
-                                                            Resource.OnOffType,
-                                                            Resource.OnOff2DType,
-                                                            Resource.OnOffVSDType,
-                                                            Resource.GrpType,
-                                                            Resource.PIDType,
-                                                            Resource.PreselType};
-            //add options to combobox column
-            foreach (var item in listDataTypes)
-            {
-                comboBoxColumn.Items.Add(item);
-            }
-
+            comboBoxColumn.DataSource = listDataTypes;
             dgvBDM.Columns.Add(comboBoxColumn);
-
             //bind rest of columns
             BindingSource bs = new BindingSource(GlobalData.DataFiltered.Objects, null);
             dgvBDM.DataSource = bs;
@@ -114,27 +112,39 @@ namespace BDM_Form
             bw_BuildXML.WorkerReportsProgress = true;
             bw_BuildXML.DoWork += bw_BuildXML_DoWork;
             bw_BuildXML.ProgressChanged += bw_BuildXML_ProgressChanged;
+            bw_BuildXML.RunWorkerCompleted += bw_BuildXML_RunWorkerCompleted;
 
             bw_BuildXMLpart = new BackgroundWorker();
             bw_BuildXMLpart.WorkerReportsProgress = true;
             bw_BuildXMLpart.DoWork += bw_BuildXMLpart_DoWork;
             bw_BuildXMLpart.ProgressChanged += bw_BuildXMLpart_ProgressChanged;
+            bw_BuildXMLpart.RunWorkerCompleted += bw_BuildXMLpart_RunWorkerCompleted;
 
             bw_DownloadPmiLibs = new BackgroundWorker();
             bw_DownloadPmiLibs.WorkerReportsProgress = true;
             bw_DownloadPmiLibs.DoWork += bw_DownloadPmiLibs_DoWork;
             bw_DownloadPmiLibs.ProgressChanged += bw_DownloadPmiLibs_ProgressChanged;
+            bw_DownloadPmiLibs.RunWorkerCompleted += bw_DownloadPmiLibs_RunWorkerCompleted;
 
             bw_DownloadResources = new BackgroundWorker();
             bw_DownloadResources.WorkerReportsProgress = true;
             bw_DownloadResources.DoWork += bw_DownloadResources_DoWork;
             bw_DownloadResources.ProgressChanged += bw_DownloadResources_ProgressChanged;
+            bw_DownloadResources.RunWorkerCompleted += bw_DownloadResources_RunWorkerCompleted;
             #endregion
 
-            #region TIA init            
-            TIAIFC = new Z45TIAIFC();            
-            connectPLCToolStripMenuItem.Enabled = TIAIFC.TIAOpennessEnable;
+            #region TIA init                        
             #endregion
+        }
+        
+
+        public void listChange()
+        {
+            listDataTypes.Clear();
+            foreach (var item in GlobalData.aotToString())
+            {
+                listDataTypes.Add(item);
+            }
         }
 
         #region custom progress event
@@ -257,8 +267,7 @@ namespace BDM_Form
         /// <param name="e"></param>
         void dgv_FilterStringChanged(object sender, EventArgs e)
         {
-            GlobalData.CopyBDM(true);       //copy Data->DataFiletered
-            Debug.WriteLine(dgvBDM.FilterString);
+            GlobalData.CopyBDM(true);       //copy Data->DataFiletered            
             Filtering(dgvBDM.FilterString); //filter it
 
             //if validation checkbox active, display invalids
@@ -404,7 +413,7 @@ namespace BDM_Form
 
         private void loadToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            //Load data from file
+            //Load data from file            
             GlobalData.Data.LoadDeSerializedFromFile();
             GlobalData.CopyBDM(true);
         }
@@ -423,6 +432,7 @@ namespace BDM_Form
 
             //save
             GlobalData.CopyBDM(false);          //copy DataFiltered -> Data
+            GlobalData.SerializeDataTypes(path);
             GlobalData.Data.SaveSerialized();   //save to temp bdm.xml
         }
 
@@ -480,9 +490,10 @@ namespace BDM_Form
                 if (!string.IsNullOrEmpty(stringInClipboard))
                 {
                     string[] rowsInClipboard = stringInClipboard.Split(rowSplitter, StringSplitOptions.RemoveEmptyEntries);     //split rows
+                    string[] columnsInClipboard = stringInClipboard.Split(columnSplitter, StringSplitOptions.RemoveEmptyEntries);  //split cols
 
-                    //more then 1 cell in clipboard -> paste selection must be equal with copy seleciton
-                    if (rowsInClipboard.Count() > 1)
+                    //more then 1 cell in clipboard -> paste selection must be 1
+                    if (rowsInClipboard.Count() > 1 || columnsInClipboard.Count() > 1)
                     {
                         int r = dgvBDM.SelectedCells[0].RowIndex;
                         int c = dgvBDM.SelectedCells[0].ColumnIndex;
@@ -491,7 +502,7 @@ namespace BDM_Form
 
                         //if you pasting cells over table range
                         if (newRows > 0)
-                        {
+                        {                            
                             for (int i = 0; i < newRows; i++)
                             {
                                 GlobalData.DataFiltered.Objects.Add(new BasicObject());
@@ -499,7 +510,8 @@ namespace BDM_Form
                         }
 
                         //if you select more then 1 cell as pasting area
-                        if (dgvBDM.SelectedCells.Count > 1)
+
+                        if (dgvBDM.SelectedCells.Count > 1 && dgvBDM.SelectedRows.Count == 0)
                         {
                             MessageBox.Show("Select only one cell as an insert point");
                         }
@@ -507,7 +519,7 @@ namespace BDM_Form
                         {
                             foreach (string CBRS in rowsInClipboard)
                             {
-                                string[] CellValue = CBRS.Split(columnSplitter);    //split columns
+                                string[] CellValue = CBRS.Split(columnSplitter, StringSplitOptions.RemoveEmptyEntries);    //split columns
                                 foreach (string CBCS in CellValue)
                                 {
                                     try
@@ -556,6 +568,7 @@ namespace BDM_Form
             if (msgbox.Result)
             {
                 GlobalData.Data.Objects.Clear();    //clear all objects from Data
+                GlobalData.DBMappingRef.Clear();//clear data mapping
                 GlobalData.CopyBDM(true);           //copy cleared Data -> DataFiltered
             }
         }
@@ -594,6 +607,7 @@ namespace BDM_Form
                         {
                             if (row.Cells[invalid.Column].Value.ToString().Equals(invalid.Value))
                             {
+                                InvPtrs.Add(row.Index);
                                 //set yellow whole row where some invalid found
                                 foreach (DataGridViewCell cell in row.Cells)
                                 {
@@ -635,10 +649,12 @@ namespace BDM_Form
             {
                 ClearInvalids();
                 DisplayInvalids();
+                btnNextInvalid.Enabled = true;
             }
             else
             {
                 ClearInvalids();
+                btnNextInvalid.Enabled = false;
             }
         }
 
@@ -657,24 +673,255 @@ namespace BDM_Form
             dgvBDM.ClearFilter(true);
             dgvBDM.ClearSort(true);
 
-            //load
+            //load            
             GlobalData.Data.LoadDeSerialized();
             GlobalData.CopyBDM(true);
         }
-        #endregion
 
+        /// <summary>
+        /// Scroll to next invalid row
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnNextInvalid_Click(object sender, EventArgs e)
+        {
+            if (InvPtrs.Count > 0)
+            {
+                //scroll and select found invalid cell
+                dgvBDM.FirstDisplayedCell = dgvBDM[1, InvPtrs[InvCtr]];   
+                dgvBDM.ClearSelection();
+                dgvBDM[0, InvPtrs[InvCtr]].Selected = true;
+
+                if (InvCtr < InvPtrs.Count - 1)
+                    InvCtr++;
+                else
+                    InvCtr = 0;
+            }
+        }
+
+        /// <summary>
+        /// Add row clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void rowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GlobalData.DataFiltered.Objects.Add(new BasicObject());
+        }
+
+        /// <summary>
+        /// Add more rows clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void rowsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            InputMsgBox imb = new InputMsgBox();
+            for (int i = 0; i < imb.newRowsNmb; i++)
+            {
+                GlobalData.DataFiltered.Objects.Add(new BasicObject());
+            }
+        }
+
+        /// <summary>
+        /// Filter columns checkbox clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void checkBoxFilterCols_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox localCB = (CheckBox)sender;
+
+            if (!localCB.Checked)
+            {
+                foreach (DataGridViewColumn col in dgvBDM.Columns)
+                {
+                    col.Visible = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Row double clicked event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void dgvBDM_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {            
+
+            if (checkBoxFilterCols.Checked)
+            {
+                string clickedDatatype = dgvBDM.Rows[e.RowIndex].Cells[Resource.Col3].Value.ToString();
+                List<string> FilterCols = new List<string>();
+
+                //Default columns visible for all
+                FilterCols.Add(Resource.Col1);
+                FilterCols.Add(Resource.Col2);
+                FilterCols.Add(Resource.Col3);
+                FilterCols.Add(Resource.Col4);
+                FilterCols.Add(Resource.Col5);
+                FilterCols.Add(Resource.Col6);
+                FilterCols.Add(Resource.Col51);
+                FilterCols.Add(Resource.Col53);
+                FilterCols.Add(Resource.Col54);
+
+                //Select what to show up to datatype
+                #region Datatype selection
+                if (clickedDatatype.Equals(Resource.DinType))
+                {
+                    FilterCols.Add(Resource.Col7);
+                    FilterCols.Add(Resource.Col8);
+                    FilterCols.Add(Resource.Col9);
+                    FilterCols.Add(Resource.Col10);
+                    FilterCols.Add(Resource.Col52);
+                    
+                }
+                else if (clickedDatatype.Equals(Resource.DoutType))
+                {
+                    FilterCols.Add(Resource.Col11);
+                    FilterCols.Add(Resource.Col52);
+                }
+                else if (clickedDatatype.Equals(Resource.AinType))
+                {
+                    FilterCols.Add(Resource.Col12);
+                    FilterCols.Add(Resource.Col13);
+                    FilterCols.Add(Resource.Col14);
+                    FilterCols.Add(Resource.Col15);
+                    FilterCols.Add(Resource.Col16);
+                    FilterCols.Add(Resource.Col17);
+                    FilterCols.Add(Resource.Col18);
+                    FilterCols.Add(Resource.Col19);
+                    FilterCols.Add(Resource.Col20);
+                    FilterCols.Add(Resource.Col21);
+                    FilterCols.Add(Resource.Col22);
+                    FilterCols.Add(Resource.Col23);
+                    FilterCols.Add(Resource.Col24);
+                    FilterCols.Add(Resource.Col25);
+                    FilterCols.Add(Resource.Col26);
+                    FilterCols.Add(Resource.Col27);
+                    FilterCols.Add(Resource.Col28);
+                    FilterCols.Add(Resource.Col29);
+                    FilterCols.Add(Resource.Col30);
+                    FilterCols.Add(Resource.Col31);
+                    FilterCols.Add(Resource.Col32);
+                    FilterCols.Add(Resource.Col33);
+                    FilterCols.Add(Resource.Col52);
+                }
+                else if (clickedDatatype.Equals(Resource.AoutType))
+                {
+                    FilterCols.Add(Resource.Col12);
+                    FilterCols.Add(Resource.Col13);
+                    FilterCols.Add(Resource.Col14);
+                    FilterCols.Add(Resource.Col15);
+                    FilterCols.Add(Resource.Col52);
+                }
+                else if (clickedDatatype.Equals(Resource.OnOffType) || clickedDatatype.Equals(Resource.OnOff2DType) || clickedDatatype.Equals(Resource.OnOffVSDType))
+                {
+                    FilterCols.Add(Resource.Col34);
+                    FilterCols.Add(Resource.Col35);
+                    FilterCols.Add(Resource.Col36);
+                    FilterCols.Add(Resource.Col37);
+                    FilterCols.Add(Resource.Col38);
+                    FilterCols.Add(Resource.Col39);
+                    FilterCols.Add(Resource.Col40);
+                    FilterCols.Add(Resource.Col41);
+                    FilterCols.Add(Resource.Col42);
+                    FilterCols.Add(Resource.Col43);
+                    FilterCols.Add(Resource.Col44);
+                    FilterCols.Add(Resource.Col45);
+                    FilterCols.Add(Resource.Col46);
+                    FilterCols.Add(Resource.Col47);
+                }
+                else if (clickedDatatype.Equals(Resource.PreselType))
+                {
+                    FilterCols.Add(Resource.Col48);
+                }
+
+                #endregion
+
+                //Hide all columns
+                foreach (DataGridViewColumn col in dgvBDM.Columns)
+                {
+                    col.Visible = false;
+                }
+
+                //Display only columns selected up to datatype
+                foreach (string s in FilterCols)
+                {
+                    dgvBDM.Columns[s].Visible = true;
+                }
+            }
+        }
+
+        #endregion
+        public static void DeserializeHeaders()
+        {
+            string path = "";
+            RegistryKey RegK = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Office\\Excel\\Addins\\BDM"); // get instalation path from registry
+            if (RegK != null)
+            {
+                path = RegK.GetValue("Manifest").ToString();
+                path = path.Replace("BDM.vsto", "XMLSources/Headers.xml");
+                path = path.Replace("file:///", "");
+            }
+            try
+            {
+                if (File.Exists(path))
+                {
+                    XmlSerializer serializer = new XmlSerializer(_header.GetType());
+                    using (StreamReader sr = new StreamReader(path))
+                    {
+                        _header = (BindingList<HeaderCls>)serializer.Deserialize(sr);
+                    }
+                }
+                else
+                {
+                    for (int i = 1; i <= 100; i++)
+                    {
+                        if (Resource.ResourceManager.GetString("Col" + i) != null)
+                        {
+                            HeaderCls he = new HeaderCls();
+                            he.HeaderName = Resource.ResourceManager.GetString("Col" + i);
+                            _header.Add(he);
+                        }
+                    }
+                    foreach (var item in _header)
+                    {
+                        item.Visible = true;
+                    }
+                    //throw new FileNotFoundException("File not found!" + Environment.NewLine + "Headers generated automatically");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
         #region archestra control
         private void exportToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            BasicObject BO = GlobalData.Data.Objects.First(x => x.TagName == "AIS1");
+            BO.Descr = 
             saveDialog.Filter = "CSV (*.csv)|*.csv";
+            DeserializeHeaders();
 
             if (saveDialog.ShowDialog() == DialogResult.OK)
-            {
-                Z45AIFC ArchestraExport = new Z45AIFC();
-                ArchestraExport.ExportData(saveDialog.FileName,GlobalData.DataFiltered.Objects);                
+            {             
+                Z45AIFC.ExportData(saveDialog.FileName, GlobalData, _header);
             }
             MessageBox.Show("Export Done");
-        }     
+        }
+
+        private void ImportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog OpenFile = new OpenFileDialog();
+            OpenFile.Filter = "CSV (*.csv)|*.csv";
+            if (OpenFile.ShowDialog() == DialogResult.OK)
+            {
+                Z45AIFC.ImportData(File.ReadAllText(OpenFile.FileName), GlobalData);
+            }
+                     
+        }
 
         #endregion
 
@@ -695,6 +942,12 @@ namespace BDM_Form
             progressLabel.Text = (string)e.UserState;
         }
 
+        //run worker completed
+        void bw_BuildXML_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            MBox msg = new MBox("Info", "Promotic XML file generation done.");
+        }
+
         //BuildXMLpart
         void bw_BuildXMLpart_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -708,6 +961,12 @@ namespace BDM_Form
             progressLabel.Text = (string)e.UserState;
         }
 
+        //run worker completed
+        void bw_BuildXMLpart_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            MBox msg = new MBox("Info", "Promotic XML file generation done.");
+        }
+
         //DownloadPmiLibs
         void bw_DownloadPmiLibs_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -719,6 +978,12 @@ namespace BDM_Form
         {
             progressBar.Value = e.ProgressPercentage;
             progressLabel.Text = (string)e.UserState;
+        }
+
+        //run worker completed
+        void bw_DownloadPmiLibs_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            MBox msg = new MBox("Info", "Promotic libraries updated.");
         }
 
         //DownloadResources
@@ -735,12 +1000,18 @@ namespace BDM_Form
         }
         #endregion
 
+        //run worker completed
+        void bw_DownloadResources_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            MBox msg = new MBox("Info", "Promotic resources updated.");
+        }
+
         private void completeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //if data are invalid, xml isn't build
             if (GlobalData.DataFiltered.Invalid() != null)
             {
-                MessageBox.Show("Invalid data. Check Main tab.");
+                MessageBox.Show("Invalid data, use validity check.");
             }
             else
             {
@@ -788,218 +1059,62 @@ namespace BDM_Form
         }
         #endregion
 
-        #region TIA control
-        private async void iOListToolStripMenuItem_Click(object sender, EventArgs e)
+        #region TIA control        
+        
+        private void IOListToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             SetProgressDefault();
-            progressBar.Step = 1;
-            if (!string.IsNullOrEmpty(selectedplc))
-            {
-                progressBar.Maximum = GlobalData.DataFiltered.Objects.Count + 1;
-                var progress = new Progress<int>(percent =>
-                {
-                    progressBar.Value = percent;
-                });
-                await Task.Run(() => TIAIFC.ImportIOlist(GlobalData.DataFiltered.Objects, progress));
-                Focus();
-                MessageBox.Show("IO List Import Done");
-                progressBar.Value = 0;
-            }
-            else
-            {
-                MessageBox.Show("PLC is not attached");
-            }
-            SetProgressDefault();
-        }
-
-        private void dBToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SetProgressDefault();
-            DBnames = new List<string>();
-            foreach (var item in GlobalData.DataFiltered.Objects)
-            {
-                if (!DBnames.Contains(item.DBName))
-                {
-                    DBnames.Add(item.DBName);
-                }
-            }
-            if (!string.IsNullOrEmpty(selectedplc))
-            {
-                progressBar.Step = 1;
-                progressBar.Maximum = DBnames.Count + 1;
-                progressBar.Value = 0;
-                foreach (var DBName in DBnames)
-                {
-                    progressBar.PerformStep();
-                    if (!string.IsNullOrEmpty(DBName))
-                    {
-                        TIAIFC.ImportDB(GlobalData.DataFiltered.Objects, DBName);
-                    }
-                }
-                TIAIFC.CalculateDBMapping(GlobalData.DataFiltered.Objects);
-                dgvBDM.Refresh();
-                progressBar.PerformStep();
-                MessageBox.Show("Data Blocks Import Done");
-                progressBar.Value = 0;
-            }
-            else
-            {
-                MessageBox.Show("PLC is not attached");
-            }
-            SetProgressDefault();
-        }
-
-        private void fCToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SetProgressDefault();
-            DBnames = new List<string>();
-            foreach (var item in GlobalData.DataFiltered.Objects)
-            {
-                if (!DBnames.Contains(item.DBName))
-                {
-                    DBnames.Add(item.DBName);
-                }
-            }
-            if (!string.IsNullOrEmpty(selectedplc))
-            {
-                progressBar.Step = 1;
-                progressBar.Maximum = DBnames.Count;
-                progressBar.Value = 0;
-                foreach (var DBName in DBnames)
-                {
-                    progressBar.PerformStep();
-                    if (!string.IsNullOrEmpty(DBName))
-                    {
-                        TIAIFC.ImportFC(GlobalData.DataFiltered.Objects, DBName);
-                    }
-                }
-                MessageBox.Show("Functions Import Done");
-                progressBar.Value = 0;
-            }
-            else
-            {
-                MessageBox.Show("PLC is not attached");
-            }
-            SetProgressDefault();
-        }
-
-        private async void allToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SetProgressDefault();
-            DBnames = new List<string>();
-            foreach (var item in GlobalData.DataFiltered.Objects)
-            {
-                if (!DBnames.Contains(item.DBName))
-                {
-                    DBnames.Add(item.DBName);
-                }
-            }
-            if (!string.IsNullOrEmpty(selectedplc))
-            {
-                progressBar.Maximum = GlobalData.DataFiltered.Objects.Count + 20 * DBnames.Count + 2;
-                progressBar.Value = 0;
-                var progress = new Progress<int>(percent =>
-                {
-                    progressBar.Value = percent;
-                });
-                await Task.Run(() => TIAIFC.ImportIOlist(GlobalData.DataFiltered.Objects, progress));
-                progressBar.Step = 10;
-                foreach (var DBName in DBnames)
-                {
-                    progressBar.PerformStep();
-                    if (!string.IsNullOrEmpty(DBName))
-                    {
-                        TIAIFC.ImportDB(GlobalData.DataFiltered.Objects, DBName);
-                    }
-                }
-                foreach (var DBName in DBnames)
-                {
-                    progressBar.PerformStep();
-                    if (!string.IsNullOrEmpty(DBName))
-                    {
-                        TIAIFC.ImportFC(GlobalData.DataFiltered.Objects, DBName);
-                    }
-                }
-                TIAIFC.CalculateDBMapping(GlobalData.DataFiltered.Objects);
-                progressBar.PerformStep();
-                dgvBDM.Refresh();
-                Focus();
-                MessageBox.Show("Import Done");
-                progressBar.Value = 0;
-            }
-            else
-            {
-                MessageBox.Show("PLC is not attached");
-            }
-            SetProgressDefault();
-        }
-
-        private async void exportToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            SetProgressDefault();
-            if (!string.IsNullOrEmpty(selectedplc))
-            {
-                progressBar.Step = 1;
-                progressBar.Maximum = 100;
-                progressBar.Value = 0;
-                GlobalData.DataFiltered.Objects.Clear();
-                var progress = new Progress<int>(percent =>
-                {
-                    progressBar.Value = percent;
-                });
-                BindingList<BDMdata.BasicObject> ExportTempData = new BindingList<BDMdata.BasicObject>();
-                await Task.Run(() => ExportTempData = TIAIFC.ExportPLCData(progress));
-                foreach (var item in ExportTempData)
-                {
-                    GlobalData.DataFiltered.Objects.Add(item);
-                }
-                GlobalData.CopyBDM(false);
-                GlobalData.DataFiltered.SaveSerialized();
-                MessageBox.Show("Export Done");
-                progressBar.Value = 0;
-            }
-            else
-            {
-                MessageBox.Show("PLC is not attached");
-            }
-            SetProgressDefault();
-        }
-
-        private void generateSourceToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SetProgressDefault();
-            progressBar.Step = 1;
-            string DBResourceTextDBs = "";
-            string DBResourceTextFCs = "";
-            DBnames = new List<string>();
-            foreach (var item in GlobalData.DataFiltered.Objects)
-            {
-                if (!DBnames.Contains(item.DBName))
-                {
-                    DBnames.Add(item.DBName);
-                }
-            }
+            progressBar.Step = 1;            
             SaveFileDialog TIAExtSrcFile = new SaveFileDialog();
+            TIAExtSrcFile.Filter = "xlsx File (*.xlsx)|*.xlsx";
             TIAExtSrcFile.ShowDialog();
             if (!string.IsNullOrEmpty(TIAExtSrcFile.FileName))
             {
-                progressBar.Maximum = DBnames.Count;
-                progressBar.Value = 0;
-                foreach (var DBName in DBnames)
-                {
-                    progressBar.PerformStep();
-                    if (!string.IsNullOrEmpty(DBName))
-                    {
-                        DBResourceTextDBs = DBResourceTextDBs + TIAIFC.GenerateExtSrcDB(GlobalData.DataFiltered.Objects, DBName);
-                        DBResourceTextFCs = DBResourceTextFCs + TIAIFC.GenerateExtSrcFC(GlobalData.DataFiltered.Objects, DBName);
-                    }
-                }
-                File.WriteAllText(TIAExtSrcFile.FileName + "DBs.db", DBResourceTextDBs);
-                File.WriteAllText(TIAExtSrcFile.FileName + "FCs.scl", DBResourceTextFCs);
-                MessageBox.Show("External source files created");
+                progressBar.Maximum = 100;
+                progressBar.Value = 50;
+                Z45TIAIFC.GeneratePLCTags(GlobalData.DataFiltered.Objects, TIAExtSrcFile.FileName.Replace(".xlsx", ""));
+                progressBar.Value = 100;
+                MessageBox.Show(TIAExtSrcFile.FileName.Split('\\').Last() + " created");
                 progressBar.Value = 0;
             }
             SetProgressDefault();
+        }
+
+        private void importToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            if (GlobalData.DBMappingRef.Count == 0)
+            {
+                MessageBox.Show("Check DB Mapping");
+            }
+            else
+            {
+                SetProgressDefault();
+                progressBar.Step = 1;
+                string DBResourceTextDBs = "";
+                string DBResourceTextFCs = "";
+                DBnames = GlobalData.DBMappingRef;
+                SaveFileDialog TIAExtSrcFile = new SaveFileDialog();
+                TIAExtSrcFile.ShowDialog();
+                if (!string.IsNullOrEmpty(TIAExtSrcFile.FileName))
+                {
+                    progressBar.Maximum = DBnames.Count;
+                    progressBar.Value = 0;
+                    foreach (var DBMapping in DBnames)
+                    {
+                        progressBar.PerformStep();
+                        if (!string.IsNullOrEmpty(DBMapping.DBName))
+                        {
+                            DBResourceTextDBs = DBResourceTextDBs + Z45TIAIFC.GenerateExtSrcDB(GlobalData.DataFiltered.Objects, DBMapping.DBName);
+                            DBResourceTextFCs = DBResourceTextFCs + Z45TIAIFC.GenerateExtSrcFC(GlobalData.DataFiltered.Objects, DBMapping.DBName, GlobalData.AObjectTypes);
+                        }
+                    }
+                    File.WriteAllText(TIAExtSrcFile.FileName + ".db", DBResourceTextDBs);
+                    File.WriteAllText(TIAExtSrcFile.FileName + ".scl", DBResourceTextFCs);
+                    MessageBox.Show("External source files created");
+                    progressBar.Value = 0;
+                }
+                SetProgressDefault();
+            }           
         }
 
         private void SetProgressDefault()
@@ -1010,94 +1125,634 @@ namespace BDM_Form
 
             progressLabel.Text = "Progress";
         }
+    
+        #endregion
 
-        private void connectPLCToolStripMenuItem_Click(object sender, EventArgs e)
+        #region Step7 control
+        /// <summary>
+        /// Enumerator to get datatypes offset in db
+        /// </summary>
+        private enum DataTypeEnum
         {
-            connectForm.FormClosing += connectForm_FormClosing;
-            connectForm.ShowDialog();
+            DinData = 6,
+            DoutData = 6,
+            AinData = 44,
+            AoutData = 24,
+            F_DinData = 282,
+            F_DoutData = 156,
+            F_AinData = 510,
+            F_AoutData = 510,
+            OnOffCtrlData = 20,
+            OnOffCtrlData_VSD = 40,
+            OnOffCtrlData_2D = 26,
+            AnalogPosCtrlData = 62,
+            GrpData = 30,
+            PreselData = 4,
+            PIDCtrlData = 140,
+            PIDStepCtrlData = 140
         }
 
-        private void connectForm_FormClosing(object sender, EventArgs e)
+        /// <summary>
+        /// Calculate db offsets up to dbnames - offline function
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void calculateDBS7ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (connectForm.Valid)
+            //Get list of uniques
+            List<BasicObject> uniqueItemsList = GlobalData.DataFiltered.Objects.GroupBy(x => x.DBName).Select(group => group.First()).ToList();
+
+            int offset;
+
+            foreach (var uniqueItem in uniqueItemsList)
             {
-                TIAIFC = connectForm.TIAIFC;
-                selectedplc = connectForm.selectedplc;
-                importToolStripMenuItem1.Enabled = true;
-                exportToolStripMenuItem1.Enabled = true;
-                generateSourceToolStripMenuItem.Enabled = true;
-                calculateDBMappingToolStripMenuItem.Enabled = true;                
-                labelProject.Text = "| " + connectForm.selectedproj + " |";
-                labelPLC.Text = connectForm.selectedplc;
-                compileAndSaveToolStripMenuItem.Enabled = true;
+                //initialize offset
+                offset = 0;
+
+                foreach (var obj in GlobalData.DataFiltered.Objects)
+                {
+                    if (obj.DBName == uniqueItem.DBName)
+                    {
+                        obj.PositionInDB = offset.ToString();
+                        try
+                        {
+                            if (obj.DataType != null)
+                            {
+                                offset += (int)Enum.Parse(typeof(DataTypeEnum), obj.DataType);
+                            }
+                            else throw new Exception("Wrong DataType!");
+                        }
+                        catch(Exception ex)
+                        {
+                            MessageBox.Show(ex.Message);
+                        }
+                    }
+                }
             }
-            else
-            {
-                importToolStripMenuItem1.Enabled = false;
-                exportToolStripMenuItem1.Enabled = false;
-                generateSourceToolStripMenuItem.Enabled = false;
-                calculateDBMappingToolStripMenuItem.Enabled = false;
-                compileAndSaveToolStripMenuItem.Enabled = false;
-                //connectPLCToolStripMenuItem.Enabled = false;
-            }
+
+            dgvBDM.Refresh();
         }
-        private void calculateDBMappingToolStripMenuItem_Click(object sender, EventArgs e)
+
+        /// <summary>
+        /// Generate source codes for step7
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void generateSourceS7ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            TIAIFC.CalculateDBMapping(GlobalData.Data.Objects);
-            dgvBDM.Refresh();            
+            SetProgressDefault();
+            progressBar.Step = 1;
+            string DBResourceTextDBs = "";
+            string DBResourceTextFCs = "";
+            DBnames = GlobalData.DBMappingRef;
+            SaveFileDialog TIAExtSrcFile = new SaveFileDialog();
+            TIAExtSrcFile.ShowDialog();
+            if (!string.IsNullOrEmpty(TIAExtSrcFile.FileName))
+            {
+                progressBar.Maximum = DBnames.Count;
+                progressBar.Value = 0;
+                foreach (var DBMapping in DBnames)
+                {
+                    progressBar.PerformStep();
+                    if (!string.IsNullOrEmpty(DBMapping.DBName))
+                    {
+                        DBResourceTextDBs = DBResourceTextDBs + GenerateExtSrcDB(GlobalData.DataFiltered.Objects, DBMapping.DBName);
+                        DBResourceTextFCs = DBResourceTextFCs + GenerateExtSrcFC(GlobalData.DataFiltered.Objects, DBMapping.DBName);
+                    }
+                }
+                File.WriteAllText(TIAExtSrcFile.FileName + "DBs.scl", DBResourceTextDBs);
+                File.WriteAllText(TIAExtSrcFile.FileName + "FCs.scl", DBResourceTextFCs);
+                MessageBox.Show("External source files created");
+                progressBar.Value = 0;
+            }
+            SetProgressDefault();
+        }
+
+        private string GenerateExtSrcDB(BindingList<BasicObject> ImportData, string DBName)
+        {
+            string SrcCode = "";
+            SrcCode = "DATA_BLOCK " + DBName + "" + Environment.NewLine;
+            //SrcCode = SrcCode + "{ S7_Optimized_Access := 'FALSE' }" + Environment.NewLine;
+            //SrcCode = SrcCode + "VERSION : 0.1" + Environment.NewLine;
+            //SrcCode = SrcCode + "NON_RETAIN" + Environment.NewLine;
+            SrcCode = SrcCode + "   STRUCT" + Environment.NewLine;
+            foreach (var item in ImportData)
+            {
+                if (item.DBName == DBName)
+                {
+                    SrcCode = SrcCode + "       " + item.TagName + ":" + item.DataType + "; //" + item.Descr + Environment.NewLine;
+                }
+            }
+            SrcCode = SrcCode + "   END_STRUCT;" + Environment.NewLine;
+            SrcCode = SrcCode + "BEGIN" + Environment.NewLine;
+            SrcCode = SrcCode + "END_DATA_BLOCK" + Environment.NewLine;
+            return SrcCode;
+        }
+
+        private string GenerateExtSrcFC(BindingList<BasicObject> ImportData, string DBName)
+        {
+            string SrcCode = "";
+            SrcCode = "FUNCTION " + DBName + "_FC : Void" + Environment.NewLine;
+            //SrcCode = SrcCode + "{ S7_Optimized_Access := 'false' }" + Environment.NewLine;
+            //SrcCode = SrcCode + "VERSION : 0.1" + Environment.NewLine;
+            SrcCode = SrcCode + "BEGIN" + Environment.NewLine;
+            foreach (var item in ImportData)
+            {
+                if (item.DBName == DBName)
+                {
+                    if (item.DataType == Resource.AinType)
+                    {
+                        SrcCode = SrcCode + ADD_AIN_FC(item);
+                    }
+                    else if (item.DataType == Resource.AnalogPosType)
+                    {
+                        SrcCode = SrcCode + ADD_AnalogPos_FC(item);
+                    }
+                    else if (item.DataType == Resource.AoutType)
+                    {
+                        SrcCode = SrcCode + ADD_Aout_FC(item);
+                    }
+                    else if ((item.DataType == Resource.DinType))
+                    {
+                        SrcCode = SrcCode + ADD_Din_FC(item);
+                    }
+                    else if ((item.DataType == Resource.DoutType))
+                    {
+                        SrcCode = SrcCode + ADD_Dout_FC(item);
+                    }
+                    else if ((item.DataType == Resource.GrpType))
+                    {
+                        SrcCode = SrcCode + ADD_GrpCtrl_FC(item);
+                    }
+                    else if ((item.DataType == Resource.OnOffType))
+                    {
+                        SrcCode = SrcCode + ADD_OnOffCtrl_FC(item);
+                        if (!string.IsNullOrEmpty(item.StartStep))
+                        {
+                            SrcCode = SrcCode + ADD_SGC_FC(item);
+                        }
+                    }
+                    else if ((item.DataType == Resource.OnOff2DType))
+                    {
+                        SrcCode = SrcCode + ADD_OnOffCtrl_2D_FC(item);
+                        if (!string.IsNullOrEmpty(item.StartStep))
+                        {
+                            SrcCode = SrcCode + ADD_SGC_FC(item);
+                        }
+                    }
+                    else if ((item.DataType == Resource.OnOffVSDType))
+                    {
+                        SrcCode = SrcCode + ADD_OnOffCtrl_VSD_FC(item);
+                        if (!string.IsNullOrEmpty(item.StartStep))
+                        {
+                            SrcCode = SrcCode + ADD_SGC_FC(item);
+                        }
+                    }
+                    else if ((item.DataType == Resource.PIDType))
+                    {
+                        SrcCode = SrcCode + ADD_PID_FC(item);
+                    }
+                    else if ((item.DataType == Resource.PreselType))
+                    {
+                        SrcCode = SrcCode + ADD_Presel_FC(item);
+                    }
+                    SrcCode = SrcCode + Environment.NewLine;
+                }
+            }
+            SrcCode = SrcCode + "END_FUNCTION" + Environment.NewLine;
+
+            return SrcCode;
+        }
+
+        # region Public method - Add Analog input function in to the source file
+        /// <summary>
+        /// Add Analog input function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_AIN_FC(BasicObject BO)
+        {
+            string FCstring;
+            string Bipolar;
+            string FBConfig;
+            string MAX;
+            string MIN;
+            string Init_HH_Dly;
+            string Init_H_Dly;
+            string Init_L_Dly;
+            string Init_LL_Dly;
+            string AL_DB;
+            string AE_HH_Cfg;
+            string AE_H_Cfg;
+            string AE_L_Cfg;
+            string AE_LL_Cfg;
+            string Init_HH_Lvl;
+            string Init_H_Lvl;
+            string Init_L_Lvl;
+            string Init_LL_Lvl;
+            if (string.IsNullOrEmpty(BO.Bipolar)) { Bipolar = "false"; } else { Bipolar = BO.Bipolar; }
+            if (string.IsNullOrEmpty(BO.FBConfig)) { FBConfig = "0"; } else { FBConfig = BO.FBConfig; }
+            if (string.IsNullOrEmpty(BO.MAX)) { MAX = "100.0"; } else { MAX = BO.MAX; }
+            if (string.IsNullOrEmpty(BO.MIN)) { MIN = "0.0"; } else { MIN = BO.MIN; }
+            if (string.IsNullOrEmpty(BO.Init_HH_Dly)) { Init_HH_Dly = "0"; } else { Init_HH_Dly = BO.Init_HH_Dly; }
+            if (string.IsNullOrEmpty(BO.Init_H_Dly)) { Init_H_Dly = "0"; } else { Init_H_Dly = BO.Init_H_Dly; }
+            if (string.IsNullOrEmpty(BO.Init_L_Dly)) { Init_L_Dly = "0"; } else { Init_L_Dly = BO.Init_L_Dly; }
+            if (string.IsNullOrEmpty(BO.Init_LL_Dly)) { Init_LL_Dly = "0"; } else { Init_LL_Dly = BO.Init_LL_Dly; }
+            if (string.IsNullOrEmpty(BO.AL_DB)) { AL_DB = "0.5"; } else { AL_DB = BO.AL_DB; }
+            if (string.IsNullOrEmpty(BO.AE_HH_Cfg)) { AE_HH_Cfg = "0"; } else { AE_HH_Cfg = BO.AE_HH_Cfg; }
+            if (string.IsNullOrEmpty(BO.AE_H_Cfg)) { AE_H_Cfg = "0"; } else { AE_H_Cfg = BO.AE_H_Cfg; }
+            if (string.IsNullOrEmpty(BO.AE_L_Cfg)) { AE_L_Cfg = "0"; } else { AE_L_Cfg = BO.AE_L_Cfg; }
+            if (string.IsNullOrEmpty(BO.AE_LL_Cfg)) { AE_LL_Cfg = "0"; } else { AE_LL_Cfg = BO.AE_LL_Cfg; }
+            if (string.IsNullOrEmpty(BO.Init_HH_Lvl)) { Init_HH_Lvl = "95.0"; } else { Init_HH_Lvl = BO.Init_HH_Lvl; }
+            if (string.IsNullOrEmpty(BO.Init_H_Lvl)) { Init_H_Lvl = "90.0"; } else { Init_H_Lvl = BO.Init_H_Lvl; }
+            if (string.IsNullOrEmpty(BO.Init_L_Lvl)) { Init_L_Lvl = "10.0"; } else { Init_L_Lvl = BO.Init_L_Lvl; }
+            if (string.IsNullOrEmpty(BO.Init_LL_Lvl)) { Init_LL_Lvl = "5.0"; } else { Init_LL_Lvl = BO.Init_LL_Lvl; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            if (!string.IsNullOrEmpty(BO.IOAddress))
+            { FCstring = FCstring + "" + BO.DBName + "." + BO.TagName + ".HWSig:=%" + BO.IOAddress + ";" + Environment.NewLine; }
+            FCstring = FCstring + "Ain(Bipolar:=" + Bipolar + "," + Environment.NewLine;
+            FCstring = FCstring + "MaxVal:=" + MAX + "," + Environment.NewLine;
+            FCstring = FCstring + "MinVal:=" + MIN + "," + Environment.NewLine;
+            FCstring = FCstring + "AlarmInitDelayHH:=" + Init_HH_Dly + "," + Environment.NewLine;
+            FCstring = FCstring + "AlarmInitDelayH:=" + Init_H_Dly + "," + Environment.NewLine;
+            FCstring = FCstring + "AlarmInitDelayL:=" + Init_L_Dly + "," + Environment.NewLine;
+            FCstring = FCstring + "AlarmInitDelayLL:=" + Init_LL_Dly + "," + Environment.NewLine;
+            FCstring = FCstring + "AEDeadBand:=" + AL_DB + "," + Environment.NewLine;
+            FCstring = FCstring + "AEConfigHH:=" + AE_HH_Cfg + "," + Environment.NewLine;
+            FCstring = FCstring + "AELevelHH:=" + Init_HH_Lvl + "," + Environment.NewLine;
+            FCstring = FCstring + "AEConfigH:=" + AE_H_Cfg + "," + Environment.NewLine;
+            FCstring = FCstring + "AELevelH:=" + Init_H_Lvl + "," + Environment.NewLine;
+            FCstring = FCstring + "AEConfigL:=" + AE_L_Cfg + "," + Environment.NewLine;
+            FCstring = FCstring + "AELevelL:=" + Init_L_Lvl + "," + Environment.NewLine;
+            FCstring = FCstring + "AEConfigLL:=" + AE_LL_Cfg + "," + Environment.NewLine;
+            FCstring = FCstring + "AELevelLL:=" + Init_LL_Lvl + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
         }
         #endregion
 
-        private void compileAndSaveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            TIAIFC.CompileSave();
-        }
-    }
-
-    #region GlobalData
-    /// <summary>
-    /// Global data - used in whole project
-    /// </summary>
-    public static class GlobalData
-    {
-        public static BDMdataClass Data = new BDMdataClass();           //Full data, as a backup for filtering and sorting
-        public static BDMdataClass DataFiltered = new BDMdataClass();   //Used data for generating and binded to datagridview on MAIN tab, at start are same as Data
-
+        #region public method - Add Analog positioning function in to the source file
         /// <summary>
-        /// Constructor
+        /// Add Analog positioning function in to the source file
         /// </summary>
-        static GlobalData()
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_AnalogPos_FC(BasicObject BO)
         {
-            //At beggining load data and copy to datafiltered
-            Data.LoadDeSerialized();
-            CopyBDM(true);
+            string FCstring;
+            string Bipolar;
+            string FBConfig;
+            if (string.IsNullOrEmpty(BO.Bipolar)) { Bipolar = "false"; } else { Bipolar = BO.Bipolar; }
+            if (string.IsNullOrEmpty(BO.FBConfig)) { FBConfig = "0"; } else { FBConfig = BO.FBConfig; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "AnalogPosCtrl(Bipolar:=" + Bipolar + "," + Environment.NewLine;
+            FCstring = FCstring + "FBConf:=" + FBConfig + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
         }
+        #endregion
 
+        #region public method - Add Analog output function in to the source file
         /// <summary>
-        /// Copy Data <-> DataFiltered
+        /// Add Analog output function in to the source file
         /// </summary>
-        /// <param name="direction">true: Data -> DataFiltered, false: inverted</param>
-        public static void CopyBDM(bool direction)
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_Aout_FC(BasicObject BO)
         {
-            //copy data to filtereddata
-            if (direction)
+            string FCstring;
+            string Bipolar;
+            string MAX;
+            string MIN;
+            if (string.IsNullOrEmpty(BO.Bipolar)) { Bipolar = "false"; } else { Bipolar = BO.Bipolar; }
+            if (string.IsNullOrEmpty(BO.MAX)) { MAX = "100.0"; } else { MAX = BO.MAX; }
+            if (string.IsNullOrEmpty(BO.MIN)) { MIN = "0.0"; } else { MIN = BO.MIN; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "Aout(Bipolar:=" + Bipolar + "," + Environment.NewLine;
+            FCstring = FCstring + "MaxVal:=" + MAX + "," + Environment.NewLine;
+            FCstring = FCstring + "MinVal:=" + MIN + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add Digital input function in to the source file
+        /// <summary>
+        /// Add Digital input function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_Din_FC(BasicObject BO)
+        {
+            string FCstring;
+            string NormalState;
+            string AEConfigDiff;
+            string Alarm_InitDelay;
+            if (string.IsNullOrEmpty(BO.NormalState)) { NormalState = "false"; } else { NormalState = BO.NormalState; }
+            if (string.IsNullOrEmpty(BO.AEConfigDiff)) { AEConfigDiff = "0"; } else { AEConfigDiff = BO.AEConfigDiff; }
+            if (string.IsNullOrEmpty(BO.Alarm_InitDelay)) { Alarm_InitDelay = "0"; } else { Alarm_InitDelay = BO.Alarm_InitDelay; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            if (!string.IsNullOrEmpty(BO.IOAddress))
+            { FCstring = FCstring + "" + BO.DBName + "." + BO.TagName + ".HWSig:=%" + BO.IOAddress + ";" + Environment.NewLine; }
+            FCstring = FCstring + "Din(NormalState:=" + NormalState + "," + Environment.NewLine;
+            FCstring = FCstring + "AEConfigDiff:=" + AEConfigDiff + "," + Environment.NewLine;
+            FCstring = FCstring + "AlarmInitDelay:=" + Alarm_InitDelay + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add Digital output function in to the source file
+        /// <summary>
+        /// Add Digital output function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_Dout_FC(BasicObject BO)
+        {
+            string FCstring;
+            string PulseTime;
+            if (string.IsNullOrEmpty(BO.PulseTime)) { PulseTime = "0"; } else { PulseTime = BO.PulseTime; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "Dout(PulseTime:=" + PulseTime + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add Group control function in to the source file
+        /// <summary>
+        /// Add group control function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_GrpCtrl_FC(BasicObject BO)
+        {
+            string FCstring;
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "GrpCtrl(LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add OnOff control function in to the source file
+        /// <summary>
+        /// Add OnOff control function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_OnOffCtrl_FC(BasicObject BO)
+        {
+            string FCstring;
+            string IBF;
+            string EnAuto;
+            string FBConfig;
+            if (string.IsNullOrEmpty(BO.IBF)) { IBF = "false"; } else { IBF = BO.IBF; }
+            if (string.IsNullOrEmpty(BO.EnAuto)) { EnAuto = "false"; } else { EnAuto = BO.EnAuto; }
+            if (string.IsNullOrEmpty(BO.FBConfig)) { FBConfig = "0"; } else { FBConfig = BO.FBConfig; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "OnOffCtrl(IBF:=" + IBF + "," + Environment.NewLine;
+            FCstring = FCstring + "EnAuto:=" + EnAuto + "," + Environment.NewLine;
+            FCstring = FCstring + "FBConf:=" + FBConfig + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add OnOff two direction control function in to the source file
+        /// <summary>
+        /// Add OnOff two direction control function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_OnOffCtrl_2D_FC(BasicObject BO)
+        {
+            string FCstring;
+            string IBF;
+            string EnAuto;
+            string FBConfig;
+            if (string.IsNullOrEmpty(BO.IBF)) { IBF = "false"; } else { IBF = BO.IBF; }
+            if (string.IsNullOrEmpty(BO.EnAuto)) { EnAuto = "false"; } else { EnAuto = BO.EnAuto; }
+            if (string.IsNullOrEmpty(BO.FBConfig)) { FBConfig = "0"; } else { FBConfig = BO.FBConfig; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "OnOffCtrl_2D(IBF:=" + IBF + "," + Environment.NewLine;
+            FCstring = FCstring + "EnAuto:=" + EnAuto + "," + Environment.NewLine;
+            FCstring = FCstring + "FBConf:=" + FBConfig + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add OnOff varibale speed control function in to the source file
+        /// <summary>
+        /// Add OnOff variable speed control function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_OnOffCtrl_VSD_FC(BasicObject BO)
+        {
+            string FCstring;
+            string IBF;
+            string EnAuto;
+            if (string.IsNullOrEmpty(BO.IBF)) { IBF = "false"; } else { IBF = BO.IBF; }
+            if (string.IsNullOrEmpty(BO.EnAuto)) { EnAuto = "false"; } else { EnAuto = BO.EnAuto; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "OnOffCtrl_VSD(IBF:=" + IBF + "," + Environment.NewLine;
+            FCstring = FCstring + "EnAuto:=" + EnAuto + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add PID control function in to the source file
+        /// <summary>
+        /// Add PID function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_PID_FC(BasicObject BO)
+        {
+            string FCstring;
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "PID(LIO:=" + BO.DBName + "." + BO.TagName + ");" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add Preselection control function in to the source file
+        /// <summary>
+        /// Add Preselection control function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_Presel_FC(BasicObject BO)
+        {
+            string FCstring;
+            string Presel_RBID;
+            if (string.IsNullOrEmpty(BO.Presel_RBID)) { Presel_RBID = "1"; } else { Presel_RBID = BO.Presel_RBID; }
+            FCstring = "//" + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "Presel(RBID:=" + Presel_RBID + "," + Environment.NewLine;
+            FCstring = FCstring + "LIO:=" + BO.DBName + "." + BO.TagName + "," + Environment.NewLine;
+            FCstring = FCstring + "GrpLink:= " + BO.DBName + "." + BO.DBName + ".GrpLink);" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #region public method - Add SGC control function in to the source file
+        /// <summary>
+        /// Add SGC control function in to the source file
+        /// </summary>
+        /// <param name="BO"></param>
+        /// <returns></returns>
+        public string ADD_SGC_FC(BasicObject BO)
+        {
+            string FCstring;
+            string GrpStartStep;
+            string GrpStopStep;
+            string GrpStartDly;
+            string GrpStopDly;
+            if (string.IsNullOrEmpty(BO.StartStep)) { GrpStartStep = "1"; } else { GrpStartStep = BO.StartStep; }
+            if (string.IsNullOrEmpty(BO.StopStep)) { GrpStopStep = "1001"; } else { GrpStopStep = BO.StopStep; }
+            if (string.IsNullOrEmpty(BO.StartDelay)) { GrpStartDly = "0"; } else { GrpStartDly = BO.StartDelay; }
+            if (string.IsNullOrEmpty(BO.StopDelay)) { GrpStopDly = "0"; } else { GrpStopDly = BO.StopDelay; }
+            FCstring = "// Group connection for " + BO.TagName + "-" + BO.Descr + Environment.NewLine;
+            FCstring = FCstring + "SGC(GrpStartStep:=" + GrpStartStep + "," + Environment.NewLine;
+            FCstring = FCstring + "GrpStopStep:=" + GrpStopStep + "," + Environment.NewLine;
+            FCstring = FCstring + "GrpStartDelay:=" + GrpStartDly + "," + Environment.NewLine;
+            FCstring = FCstring + "GrpStopDelay:=" + GrpStopDly + "," + Environment.NewLine;
+            FCstring = FCstring + "GMData:=" + BO.DBName + "." + BO.TagName + ".SGCLink," + Environment.NewLine;
+            FCstring = FCstring + "GrpLink:=" + BO.DBName + "." + BO.DBName + ".GrpLink);" + Environment.NewLine;
+            return FCstring;
+        }
+        #endregion
+
+        #endregion
+
+
+        #region Import IO Table
+        private void importIOTableToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
             {
-                DataFiltered.Objects.Clear();
-                foreach (var obj in Data.Objects)
+                EF = new ExcelFileData();
+                OpenFileDialog SelectFile = new OpenFileDialog();
+                SelectFile.Filter = "excel files (*.xls/*.xlsx)|*.xls*|All files (*.*)|*.*";
+                SelectFile.ShowReadOnly = true;
+                if (SelectFile.ShowDialog() == DialogResult.OK)
                 {
-                    DataFiltered.Objects.Add(obj);
+                    ELS = new ExcelListSelector(EF.SelectFile(SelectFile.FileName));
+                    ELS.SelectionChanged += new EventHandler(AssigneIndex);
+                    ELS.SelectionAccepted += new EventHandler(UpdateDataGrid);
+                    ELS.TopMost = true;
+                    ELS.Show();
                 }
             }
-            //copy filtereddata to data
-            else
+            catch
             {
-                Data.Objects.Clear();
-                foreach (var obj in DataFiltered.Objects)
-                {
-                    Data.Objects.Add(obj);
-                }
+                MessageBox.Show("Excel is not installed");
             }
-        } 
+                      
+        }
+        private void AssigneIndex(object sender, EventArgs e)
+        {
+            ExcelListIndex = ELS.SelIndex;            
+        }
+        private void UpdateDataGrid(object sender, EventArgs e)
+        {
+            DataTable DT = new DataTable();
+            DT = EF.SelectList(ExcelListIndex);
+            ImportTableView IT = new ImportTableView(DT,GlobalData);            
+            IT.Show();            
+        }
+        #endregion
+
+        private void objectTemplatesToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            DBSetUp DBSetUpWin = new DBSetUp(GlobalData);
+            DBSetUpWin.Text = "DB Mapping Setup";
+            DBSetUpWin.Show();
+        }
+        
+
+        private void allZ45PanelsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Promotic.CalcAlarmStripes();
+        }
+
+        private void singlePanelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Promotic.CalcAlarmStripeSingle();
+        }        
+
+        private void importToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog OpenFile = new OpenFileDialog();
+            OpenFile.Filter = "TIA file (*.db,*.scl)|*.db;*.scl|xlsx File (*.xlsx)|*.xlsx";
+            if (OpenFile.ShowDialog() == DialogResult.OK)
+            {
+                if (OpenFile.FileName.Contains(".xlsx"))
+                {
+                    progressBar.Value = 50;
+                    Z45TIAIFC.ImportTIAIOListSRC(GlobalData.DataFiltered.Objects, OpenFile.FileName);
+                }
+                else
+                {
+                    progressBar.Value = 50;
+                    Z45TIAIFC.ImportTIADBSRC(GlobalData.DataFiltered.Objects, OpenFile.FileName);
+                    Z45TIAIFC.ImportTIAFCSRC(GlobalData.DataFiltered.Objects, OpenFile.FileName);                    
+                }                
+                progressBar.Value = 100;
+                dgvBDM.Refresh();
+                //save
+                GlobalData.CopyBDM(false);          //copy DataFiltered -> Data
+                GlobalData.Data.SaveSerialized();   //save to temp bdm.xml
+                MessageBox.Show("Import Done");
+                progressBar.Value = 0;
+            }
+        }
+
+        private void calculateDBToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            SetProgressDefault();
+            DBnames = GlobalData.DBMappingRef;
+            progressBar.Step = 1;
+            progressBar.Maximum = DBnames.Count + 1;
+            progressBar.Value = 0;     
+            Z45TIAIFC.CalculateDBMapping(GlobalData);
+            dgvBDM.Refresh();
+            progressBar.PerformStep();
+            MessageBox.Show("Data Blocks Calculation Done");
+            progressBar.Value = 0;
+            SetProgressDefault();
+            GlobalData.CopyBDM(false);          //copy DataFiltered -> Data
+            GlobalData.Data.SaveSerialized();   //save to temp bdm.xml
+        }
+
+        private void setupDataTypeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SetupDataType Setup = new SetupDataType(GlobalData.AObjectTypes);            
+            Setup.Text = "DataType Setup";
+            Setup.Show();
+            Setup.FormClosed -= setupDataType_FormClosed;
+        }
+
+        private void setupDataType_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            listChange();
+        }
+
+        private void setupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ArchestraSetup Setup = new ArchestraSetup(GlobalData.AObjectTypes);
+            Setup.Text = "Archestra Setup";
+            Setup.Show();
+        }
+
+        private void exportSetupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportSetup Setup = new ExportSetup(GlobalData.AObjectTypes);
+            Setup.Text = "Export Setup";
+            Setup.Show();
+        }
     }
-    #endregion
 }

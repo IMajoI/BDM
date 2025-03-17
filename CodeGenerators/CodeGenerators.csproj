@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B7E9FD19-AF3B-49F9-80EA-D35ED509D80D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CodeGenerators</RootNamespace>
+    <AssemblyName>CodeGenerators</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Archestra\Z45AIFC.cs" />
+    <Compile Include="Frms\ArchestraSetup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frms\ArchestraSetup.Designer.cs">
+      <DependentUpon>ArchestraSetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Frms\DBSetUp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frms\DBSetUp.Designer.cs">
+      <DependentUpon>DBSetUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Frms\ExportSetup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frms\ExportSetup.Designer.cs">
+      <DependentUpon>ExportSetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Frms\HeaderSetup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frms\HeaderSetup.Designer.cs">
+      <DependentUpon>HeaderSetup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Frms\MBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frms\MBox.Designer.cs">
+      <DependentUpon>MBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Frms\SetupDataType.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frms\SetupDataType.Designer.cs">
+      <DependentUpon>SetupDataType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TIA\Z45TIAIFC.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BDMdata\BDMdata.csproj">
+      <Project>{ac9e8b4e-fc60-45b0-bfb9-7193ae0b3224}</Project>
+      <Name>BDMdata</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Frms\ArchestraSetup.resx">
+      <DependentUpon>ArchestraSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frms\DBSetUp.resx">
+      <DependentUpon>DBSetUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frms\ExportSetup.resx">
+      <DependentUpon>ExportSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frms\HeaderSetup.resx">
+      <DependentUpon>HeaderSetup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frms\MBox.resx">
+      <DependentUpon>MBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frms\SetupDataType.resx">
+      <DependentUpon>SetupDataType.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Document Load="Auto">
 	<Cfg Name="Default">
-		<Content ver="80323">
-			<GItem Name="Canvas" Type="PmiCanvas">
+		<Content ver="80327">
+			<GItem Name="Canvas1" Type="PmiCanvas">
 				<Prop Name="EnabledInRt">1</Prop>
 				<Prop Name="EnabledInPanel">1</Prop>
 				<Prop Name="EnabledInWeb">1</Prop>
 				<Prop Name="EnabledInPrint">1</Prop>
 				<Prop Name="Attr0Dt">;24960</Prop>
-				<Prop Name="X">40</Prop>
-				<Prop Name="Y">90</Prop>
+				<Prop Name="X">930</Prop>
+				<Prop Name="Y">370</Prop>
 				<Prop Name="Dx">130</Prop>
 				<Prop Name="Dy">30</Prop>
 				<Props Name="Params">
-					<Prop Name="tagName" Type="par">ain1</Prop>
+					<Prop Name="tagName" Type="par">ain</Prop>
 					<Prop Name="fraction" Type="par">2</Prop>
 				</Props>
 				<Prop Name="ToolTip">
@@ -78,7 +78,7 @@
 					<Prop Name="AnyAck" Type="bool">
 						<DStatic>0</DStatic>
 						<DBind Type="PP">
-							<Prop Name="Value">$.join("/Z45AppCore/AinData/",$.par("tagName"),"/#vars/HH_ALAck");Value</Prop>
+							<Prop Name="Value">$.join("/Z45AppCore/AinData/",$.par("tagName"),"/#vars/AnyAck");Value</Prop>
 							<Prop Name="Reconnect">0</Prop>
 						</DBind>
 					</Prop>
@@ -311,11 +311,7 @@ var Alarm = pEvent.GetVar("AnyAl").Value;
 var ALAck = pEvent.GetVar("AnyAck").Value;
 var AlInhibit = pEvent.GetVar("AlarmLInhibit").Value || pEvent.GetVar("AlarmLLInhibit").Value || pEvent.GetVar("AlarmHInhibit").Value || pEvent.GetVar("AlarmHHInhibit").Value;
 
-if(AlInhibit)
-{
-    ctx.fillStyle = alInhColor;
-}
-else if(Alarm && ALAck)
+if(Alarm && ALAck)
 {
     ctx.fillStyle = blink ? alActColor : alNormalColor;
 }
@@ -326,6 +322,10 @@ else if(Alarm && !ALAck)
 else if(!Alarm && ALAck)
 {
     ctx.fillStyle = blink ? alUnackColor : alNormalColor;
+}
+else if(AlInhibit)
+{
+    ctx.fillStyle = alInhColor;
 }
 else
 {
@@ -389,7 +389,7 @@ if(quality !== 192)
 					<Method Name="Value">
 						<Prop Name="Params">ctx,dx,dy</Prop>
 						<Script><![CDATA[var fraction = pEvent.GetVar("fraction").Value;
-var Value =  Pm.Round(pEvent.GetVar("Value").Value, 1 / Pm.Pow(10, fraction));
+var Value =  Pm.StringFormat("%." + fraction +"f", Pm.Round(pEvent.GetVar("Value").Value, 1 / Pm.Pow(10, fraction)));
 var vFontSize = Pm.Round(dy * 0.8, 1);
 var Unit = pEvent.GetVar("Unit").Value;
 
@@ -397,7 +397,7 @@ ctx.strokeStyle = "black";
 ctx.fillStyle = "black";
 ctx.font = vFontSize + "px arial";
 ctx.textAlign = "center";
-ctx.fillText(Value + Unit, dx/2, vFontSize);]]></Script>
+ctx.fillText(Value + " " + Unit, dx/2, vFontSize);]]></Script>
 					</Method>
 					<Method Name="onDraw">
 						<Prop Name="Params"></Prop>

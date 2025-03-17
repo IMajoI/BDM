@@ -5,6 +5,11 @@ using System.Windows.Forms;
 using BDMdata;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Excel;
+using CodeGenerators.Frms;
+using System.Collections.Generic;
+using Microsoft.Win32;
+using System.IO;
+using System.Xml.Serialization;
 
 namespace BDM
 {
@@ -15,6 +20,8 @@ namespace BDM
         static FormProgress formProgSetData;    //custom form to show progress
         static FormProgress formProgGetData;
         static Stopwatch stopWatch;
+        public static BindingList<HeaderCls> _header;
+        public static GData gd;
 
         /// <summary>
         /// Constructor
@@ -35,6 +42,10 @@ namespace BDM
             bwGetData.DoWork += bwGetData_DoWork;
             bwGetData.ProgressChanged += bwGetData_ProgressChanged;
             bwGetData.RunWorkerCompleted += bwGetData_RunWorkerCompleted;
+
+            _header = new BindingList<HeaderCls>();
+            DeserializeHeaders();
+
 
             //stopwatch
             stopWatch = new Stopwatch();
@@ -123,65 +134,37 @@ namespace BDM
         {
             Worksheet activeSheet = Globals.ThisAddIn.Application.ActiveSheet;
 
+            DeserializeHeaders();
+
             try
             {
                 //start from first cell and continue
                 Range startRange = activeSheet.Cells[1, 1];
 
-                startRange.Value = Resource.Col1;
-                startRange.Offset[0, 1].Value = Resource.Col2;
-                startRange.Offset[0, 2].Value = Resource.Col3;
-                startRange.Offset[0, 3].Value = Resource.Col4;
-                startRange.Offset[0, 4].Value = Resource.Col5;
-                startRange.Offset[0, 5].Value = Resource.Col6;
-                startRange.Offset[0, 6].Value = Resource.Col7;
-                startRange.Offset[0, 7].Value = Resource.Col8;
-                startRange.Offset[0, 8].Value = Resource.Col9;
-                startRange.Offset[0, 9].Value = Resource.Col19;
-                startRange.Offset[0, 10].Value = Resource.Col11;
-                startRange.Offset[0, 11].Value = Resource.Col12;
-                startRange.Offset[0, 12].Value = Resource.Col13;
-                startRange.Offset[0, 13].Value = Resource.Col14;
-                startRange.Offset[0, 14].Value = Resource.Col15;
-                startRange.Offset[0, 15].Value = Resource.Col16;
-                startRange.Offset[0, 16].Value = Resource.Col17;
-                startRange.Offset[0, 17].Value = Resource.Col18;
-                startRange.Offset[0, 18].Value = Resource.Col19;
-                startRange.Offset[0, 19].Value = Resource.Col20;
-                startRange.Offset[0, 20].Value = Resource.Col21;
-                startRange.Offset[0, 21].Value = Resource.Col22;
-                startRange.Offset[0, 22].Value = Resource.Col23;
-                startRange.Offset[0, 23].Value = Resource.Col24;
-                startRange.Offset[0, 24].Value = Resource.Col25;
-                startRange.Offset[0, 25].Value = Resource.Col26;
-                startRange.Offset[0, 26].Value = Resource.Col27;
-                startRange.Offset[0, 27].Value = Resource.Col28;
-                startRange.Offset[0, 28].Value = Resource.Col29;
-                startRange.Offset[0, 29].Value = Resource.Col30;
-                startRange.Offset[0, 30].Value = Resource.Col31;
-                startRange.Offset[0, 31].Value = Resource.Col32;
-                startRange.Offset[0, 32].Value = Resource.Col33;
-                startRange.Offset[0, 33].Value = Resource.Col34;
-                startRange.Offset[0, 34].Value = Resource.Col35;
-                startRange.Offset[0, 35].Value = Resource.Col36;
-                startRange.Offset[0, 36].Value = Resource.Col37;
-                startRange.Offset[0, 37].Value = Resource.Col38;
-                startRange.Offset[0, 38].Value = Resource.Col39;
-                startRange.Offset[0, 39].Value = Resource.Col40;
-                startRange.Offset[0, 40].Value = Resource.Col41;
-                startRange.Offset[0, 41].Value = Resource.Col42;
-                startRange.Offset[0, 42].Value = Resource.Col43;
-                startRange.Offset[0, 43].Value = Resource.Col44;
-                startRange.Offset[0, 44].Value = Resource.Col45;
-                startRange.Offset[0, 45].Value = Resource.Col46;
-                startRange.Offset[0, 46].Value = Resource.Col47;
-                startRange.Offset[0, 47].Value = Resource.Col48;
-                startRange.Offset[0, 48].Value = Resource.Col49;
-                startRange.Offset[0, 49].Value = Resource.Col50;
-                startRange.Offset[0, 50].Value = Resource.Col51;
-                startRange.Offset[0, 51].Value = Resource.Col52;
-                startRange.Offset[0, 52].Value = Resource.Col53;
-                startRange.Offset[0, 53].Value = Resource.Col54;
+
+                for (int i = 0; i < _header.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        startRange.Value = _header[i].HeaderName;
+                    }
+                    else
+                    {
+                        startRange.Offset[0, i].Value = _header[i].HeaderName;
+                    }
+
+                    if (_header[i].Visible == false)
+                    {
+                        Range range = (Range)activeSheet.Columns[i + 1, Type.Missing];
+                        range.EntireColumn.Hidden = true;
+                    }
+                    else
+                    {
+                        Range range = (Range)activeSheet.Columns[i + 1, Type.Missing];
+                        range.EntireColumn.Hidden = false;
+                    }
+                }
+                AddDropdownMenu();
             }
             catch (Exception ex)
             {
@@ -192,10 +175,216 @@ namespace BDM
 
             return true;
         }
+        public static void AddDropdownMenu()
+        {
+            //Excel dropdown menu
+
+            Worksheet activeSheet = Globals.ThisAddIn.Application.ActiveSheet;
+            string path = "";
+
+            RegistryKey RegK = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Office\\Excel\\Addins\\BDM"); // get instalation path from registry
+            if (RegK != null)
+            {
+                path = RegK.GetValue("Manifest").ToString();
+                path = path.Replace("BDM.vsto|vstolocal", "XMLSources/AObjectTypes.xml");
+                path = path.Replace("file:///", "");
+            }
+
+            gd = new GData();
+            gd.DeserializeDataTypes(path);
+
+            List<string> list = new List<string>();
+            foreach (var item in gd.aotToString())
+            {
+                list.Add(item);
+            }
+            var flatList = string.Join(";", list.ToArray());
+            var cell = (Range)activeSheet.Columns[3, Type.Missing];
+            cell.EntireColumn.Validation.Delete();
+            cell.EntireColumn.Validation.Add(
+               XlDVType.xlValidateList,
+               XlDVAlertStyle.xlValidAlertInformation,
+               XlFormatConditionOperator.xlBetween,
+               flatList,
+               Type.Missing);
+            cell.Validation.IgnoreBlank = true;
+            cell.Validation.InCellDropdown = true;
+        }
+        public static void RemoveDropdownMenu()
+        {
+            //Excel dropdown menu
+
+            Worksheet activeSheet = Globals.ThisAddIn.Application.ActiveSheet;
+            var cell = (Range)activeSheet.Columns[3, Type.Missing];
+            cell.EntireColumn.Validation.Delete();
+            cell.EntireColumn.Validation.Add(
+               XlDVType.xlValidateList,
+               XlDVAlertStyle.xlValidAlertInformation,
+               XlFormatConditionOperator.xlBetween,
+               Type.Missing,
+               Type.Missing);
+            cell.Validation.IgnoreBlank = true;
+            cell.Validation.InCellDropdown = true;
+        }
+        public static bool ClearHeaders(int headerCnt)
+        {
+            Worksheet activeSheet = Globals.ThisAddIn.Application.ActiveSheet;
+
+            try
+            {
+                //start from first cell and continue
+                Range startRange = activeSheet.Cells[1, 1];
+
+
+                startRange.Value = "";
+                for (int i = 1; i < headerCnt; i++)
+                {
+                    startRange.Offset[0, i].Value = "";
+                }
+            }
+            catch (Exception ex)
+            {
+                //show exception if fail
+                MessageBox.Show(ex.ToString());
+                return false;
+            }
+
+            return true;
+        }
+        public static void DeserializeHeaders()
+        {
+            string path = "";
+            RegistryKey RegK = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Office\\Excel\\Addins\\BDM"); // get instalation path from registry
+            if (RegK != null)
+            {
+                path = RegK.GetValue("Manifest").ToString();
+                path = path.Replace("BDM.vsto", "XMLSources/Headers.xml");
+                path = path.Replace("file:///", "");
+            }
+            try
+            {
+                if (File.Exists(path))
+                {
+                    XmlSerializer serializer = new XmlSerializer(_header.GetType());
+                    using (StreamReader sr = new StreamReader(path))
+                    {
+                        _header = (BindingList<HeaderCls>)serializer.Deserialize(sr);
+                    }
+                }
+                else
+                {
+                    for (int i = 1; i <= 100; i++)
+                    {
+                        if (Resource.ResourceManager.GetString("Col" + i) != null)
+                        {
+                            HeaderCls he = new HeaderCls();
+                            he.HeaderName = Resource.ResourceManager.GetString("Col" + i);
+                            _header.Add(he);
+                        }
+                    }
+                    foreach (var item in _header)
+                    {
+                        item.Visible = true;
+                    }
+                    //throw new FileNotFoundException("File not found!" + Environment.NewLine + "Headers generated automatically");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
         /// <summary>
         /// Set excel data method - save to temp file bdm.xml
         /// </summary>
+        public static void eData(BDMdataClass GD)
+        {
+            Worksheet activeSheet = Globals.ThisAddIn.Application.ActiveSheet;
+            Range rngLastDataType = activeSheet.get_Range("A1").EntireColumn.SpecialCells(XlCellType.xlCellTypeLastCell); //gets last used cell in any column
+
+            //replace nulls with white space to avoid errors during next operations
+            Range allRng = (Range)activeSheet.Range[activeSheet.Cells[1, 1], activeSheet.Cells[rngLastDataType.Row, 57]];
+            allRng.Replace(null, " ");
+
+
+            Globals.ThisAddIn.Application.DisplayAlerts = true;                 //turn on alerts to show important messages
+
+            int dataCount = rngLastDataType.Row;
+
+            //loop thru all rows 
+            for (int j = 2; j <= dataCount; j++)
+            {
+                Range range = activeSheet.Range[activeSheet.Cells[j, 1], activeSheet.Cells[j, 57]];     //set range whole row of data
+                Array cellArray = (Array)range.Cells.Value2;                                            //cast range to array of strings
+
+                //add as new object to bdmdata
+                GD.Objects.Add(
+                    Excel.SetBasicObject(
+                            cellArray.GetValue(1, 1).ToString(),
+                            cellArray.GetValue(1, 2).ToString(),
+                            cellArray.GetValue(1, 3).ToString(),
+                            cellArray.GetValue(1, 4).ToString(),
+                            cellArray.GetValue(1, 5).ToString(),
+                            cellArray.GetValue(1, 6).ToString(),
+                            cellArray.GetValue(1, 7).ToString(),
+                            cellArray.GetValue(1, 8).ToString(),
+                            cellArray.GetValue(1, 9).ToString(),
+                            cellArray.GetValue(1, 10).ToString(),
+                            cellArray.GetValue(1, 11).ToString(),
+                            cellArray.GetValue(1, 12).ToString(),
+                            cellArray.GetValue(1, 13).ToString(),
+                            cellArray.GetValue(1, 14).ToString(),
+                            cellArray.GetValue(1, 15).ToString(),
+                            cellArray.GetValue(1, 16).ToString(),
+                            cellArray.GetValue(1, 17).ToString(),
+                            cellArray.GetValue(1, 18).ToString(),
+                            cellArray.GetValue(1, 19).ToString(),
+                            cellArray.GetValue(1, 20).ToString(),
+                            cellArray.GetValue(1, 21).ToString(),
+                            cellArray.GetValue(1, 22).ToString(),
+                            cellArray.GetValue(1, 23).ToString(),
+                            cellArray.GetValue(1, 24).ToString(),
+                            cellArray.GetValue(1, 25).ToString(),
+                            cellArray.GetValue(1, 26).ToString(),
+                            cellArray.GetValue(1, 27).ToString(),
+                            cellArray.GetValue(1, 28).ToString(),
+                            cellArray.GetValue(1, 29).ToString(),
+                            cellArray.GetValue(1, 30).ToString(),
+                            cellArray.GetValue(1, 31).ToString(),
+                            cellArray.GetValue(1, 32).ToString(),
+                            cellArray.GetValue(1, 33).ToString(),
+                            cellArray.GetValue(1, 34).ToString(),
+                            cellArray.GetValue(1, 35).ToString(),
+                            cellArray.GetValue(1, 36).ToString(),
+                            cellArray.GetValue(1, 37).ToString(),
+                            cellArray.GetValue(1, 38).ToString(),
+                            cellArray.GetValue(1, 39).ToString(),
+                            cellArray.GetValue(1, 40).ToString(),
+                            cellArray.GetValue(1, 41).ToString(),
+                            cellArray.GetValue(1, 42).ToString(),
+                            cellArray.GetValue(1, 43).ToString(),
+                            cellArray.GetValue(1, 44).ToString(),
+                            cellArray.GetValue(1, 45).ToString(),
+                            cellArray.GetValue(1, 46).ToString(),
+                            cellArray.GetValue(1, 47).ToString(),
+                            cellArray.GetValue(1, 48).ToString(),
+                            cellArray.GetValue(1, 49).ToString(),
+                            cellArray.GetValue(1, 50).ToString(),
+                            cellArray.GetValue(1, 51).ToString(),
+                            cellArray.GetValue(1, 52).ToString(),
+                            cellArray.GetValue(1, 53).ToString(),
+                            cellArray.GetValue(1, 54).ToString(),
+                            cellArray.GetValue(1, 55).ToString(),
+                            cellArray.GetValue(1, 56).ToString(),
+                            cellArray.GetValue(1, 57).ToString()
+                        )
+                    );
+                //report progress
+                //int progress = (int)(100.0 / (double)(dataCount) * (j - 1));
+                //bwSetData.ReportProgress(progress);
+            }
+        }
         public static void SetExcelData()
         {
             if (!bwSetData.IsBusy)
@@ -241,92 +430,7 @@ namespace BDM
             Globals.ThisAddIn.Application.DisplayAlerts = false;                //turn off alerts to skip some not important messages
             BDMdataClass outData = new BDMdataClass();
 
-            Worksheet activeSheet = Globals.ThisAddIn.Application.ActiveSheet;
-            Range rngLastDataType = activeSheet.get_Range("A1").EntireColumn.SpecialCells(XlCellType.xlCellTypeLastCell); //gets last used cell in any column
-
-            //replace nulls with white space to avoid errors during next operations
-            Range allRng = (Range)activeSheet.Range[activeSheet.Cells[1, 1], activeSheet.Cells[rngLastDataType.Row, 54]];
-            allRng.Replace(null, " ");
-
-
-            Globals.ThisAddIn.Application.DisplayAlerts = true;                 //turn on alerts to show important messages
-
-            int dataCount = rngLastDataType.Row;
-
-            //loop thru all rows 
-            for (int i = 2; i <= dataCount; i++)
-            {
-                //if cancel wasn't pressed on progress form continue
-                if (!bwSetData.CancellationPending)
-                {
-                    Range range = activeSheet.Range[activeSheet.Cells[i, 1], activeSheet.Cells[i, 54]];     //set range whole row of data
-                    Array cellArray = (Array)range.Cells.Value2;                                            //cast range to array of strings
-
-                    //add as new object to bdmdata
-                    outData.Objects.Add(
-                        SetBasicObject(
-                                cellArray.GetValue(1, 1).ToString(),
-                                cellArray.GetValue(1, 2).ToString(),
-                                cellArray.GetValue(1, 3).ToString(),
-                                cellArray.GetValue(1, 4).ToString(),
-                                cellArray.GetValue(1, 5).ToString(),
-                                cellArray.GetValue(1, 6).ToString(),
-                                cellArray.GetValue(1, 7).ToString(),
-                                cellArray.GetValue(1, 8).ToString(),
-                                cellArray.GetValue(1, 9).ToString(),
-                                cellArray.GetValue(1, 10).ToString(),
-                                cellArray.GetValue(1, 11).ToString(),
-                                cellArray.GetValue(1, 12).ToString(),
-                                cellArray.GetValue(1, 13).ToString(),
-                                cellArray.GetValue(1, 14).ToString(),
-                                cellArray.GetValue(1, 15).ToString(),
-                                cellArray.GetValue(1, 16).ToString(),
-                                cellArray.GetValue(1, 17).ToString(),
-                                cellArray.GetValue(1, 18).ToString(),
-                                cellArray.GetValue(1, 19).ToString(),
-                                cellArray.GetValue(1, 20).ToString(),
-                                cellArray.GetValue(1, 21).ToString(),
-                                cellArray.GetValue(1, 22).ToString(),
-                                cellArray.GetValue(1, 23).ToString(),
-                                cellArray.GetValue(1, 24).ToString(),
-                                cellArray.GetValue(1, 25).ToString(),
-                                cellArray.GetValue(1, 26).ToString(),
-                                cellArray.GetValue(1, 27).ToString(),
-                                cellArray.GetValue(1, 28).ToString(),
-                                cellArray.GetValue(1, 29).ToString(),
-                                cellArray.GetValue(1, 30).ToString(),
-                                cellArray.GetValue(1, 31).ToString(),
-                                cellArray.GetValue(1, 32).ToString(),
-                                cellArray.GetValue(1, 33).ToString(),
-                                cellArray.GetValue(1, 34).ToString(),
-                                cellArray.GetValue(1, 35).ToString(),
-                                cellArray.GetValue(1, 36).ToString(),
-                                cellArray.GetValue(1, 37).ToString(),
-                                cellArray.GetValue(1, 38).ToString(),
-                                cellArray.GetValue(1, 39).ToString(),
-                                cellArray.GetValue(1, 40).ToString(),
-                                cellArray.GetValue(1, 41).ToString(),
-                                cellArray.GetValue(1, 42).ToString(),
-                                cellArray.GetValue(1, 43).ToString(),
-                                cellArray.GetValue(1, 44).ToString(),
-                                cellArray.GetValue(1, 45).ToString(),
-                                cellArray.GetValue(1, 46).ToString(),
-                                cellArray.GetValue(1, 47).ToString(),
-                                cellArray.GetValue(1, 48).ToString(),
-                                cellArray.GetValue(1, 49).ToString(),
-                                cellArray.GetValue(1, 50).ToString(),
-                                cellArray.GetValue(1, 51).ToString(),
-                                cellArray.GetValue(1, 52).ToString(),
-                                cellArray.GetValue(1, 53).ToString(),
-                                cellArray.GetValue(1, 54).ToString()
-                            )
-                        );
-
-                    //report progress
-                    int progress = (int)(100.0 / (double)(dataCount) * (i-1));
-                    bwSetData.ReportProgress(progress);
-                }
-            }
+            eData(outData);
 
             try
             {
@@ -362,6 +466,7 @@ namespace BDM
                 stopWatch.Start();
                 bwGetData.RunWorkerAsync();     //start bw
             }
+            AddDropdownMenu();
         }
 
         /// <summary>
@@ -398,7 +503,7 @@ namespace BDM
                 if (!bwGetData.CancellationPending)
                 {
                     i++;    //iterate i to have row index
-                    Range rng = (Range)activeSheet.Range[activeSheet.Cells[i, 1], activeSheet.Cells[i, 54]];    //set range whole row
+                    Range rng = (Range)activeSheet.Range[activeSheet.Cells[i, 1], activeSheet.Cells[i, 57]];    //set range whole row
                     //fill range with array built from BDMDataClass.BasicObject
                     rng.Value = new string[] {  obj.TagName,
                                                 obj.Descr,
@@ -421,12 +526,12 @@ namespace BDM
                                                 obj.Init_LL_Dly,
                                                 obj.AL_DB,
                                                 obj.AE_HH_Cfg,
-                                                obj.Init_HH_Lvl,
                                                 obj.AE_H_Cfg,
-                                                obj.Init_H_Lvl,
                                                 obj.AE_L_Cfg,
-                                                obj.Init_L_Lvl,
                                                 obj.AE_LL_Cfg,
+                                                obj.Init_HH_Lvl,
+                                                obj.Init_H_Lvl,
+                                                obj.Init_L_Lvl,
                                                 obj.Init_LL_Lvl,
                                                 obj.AEHH_severity,
                                                 obj.AEH_severity,
@@ -454,7 +559,10 @@ namespace BDM
                                                 obj.IOAddress,
                                                 obj.HMIArea,
                                                 obj.HMIparrent,
-                                        };
+                                                obj.ValueDecimalPlaces,
+                                                obj.HMI_HWSigFault_severity,
+                                                obj.SecurityDefinition
+                    };
                     //report progress
                     int progress = (int)(100.0 / (double)(inData.Objects.Count) * (i - 1));
                     bwGetData.ReportProgress(progress);
@@ -462,6 +570,7 @@ namespace BDM
             }
 
             Globals.ThisAddIn.Application.ScreenUpdating = true;        //turn on screen updating
+            activeSheet.Columns.AutoFit();
             return true;
         }
 
@@ -485,7 +594,7 @@ namespace BDM
         }
 
         //Metohd to set object from array(row)
-        private static BasicObject SetBasicObject(string tagname,
+        public static BasicObject SetBasicObject(string tagname,
                             string descr,
                             string datatype,
                             string dbnr,
@@ -538,7 +647,13 @@ namespace BDM
                             string s7comm = "",
                             string ioaddress = "",
                             string hmiarea = "",
-                            string hmiparrent = "")
+                            string hmiparrent = "",
+                            string StepQty = "",
+                            string SeqRep = "",
+                            string RBID = "",
+                            string ValueDecimalPlaces = "",
+                            string HMI_HWSigFault_severity = "",
+                            string SecurityDefinition = "")
         {
             BasicObject obj = new BasicObject();
 
@@ -603,6 +718,10 @@ namespace BDM
 
             obj.HMIArea = hmiarea;
             obj.HMIparrent = hmiparrent;
+
+            obj.ValueDecimalPlaces = ValueDecimalPlaces;
+            obj.HMI_HWSigFault_severity = HMI_HWSigFault_severity;
+            obj.SecurityDefinition = SecurityDefinition;
 
             return obj;
         }

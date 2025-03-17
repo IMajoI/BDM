@@ -19,7 +19,7 @@ namespace BDMdata {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resource {
@@ -867,7 +867,7 @@ namespace BDMdata {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Init_L_ Lvl.
+        ///   Looks up a localized string similar to Init_LL_Lvl.
         /// </summary>
         public static string Col28 {
             get {
@@ -948,7 +948,7 @@ namespace BDMdata {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FB1CCW_suffix.
+        ///   Looks up a localized string similar to FB1_CCW_suffix.
         /// </summary>
         public static string Col36 {
             get {
@@ -975,7 +975,7 @@ namespace BDMdata {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CMD1CCW_Suffix.
+        ///   Looks up a localized string similar to CMD1_CCW_suffix.
         /// </summary>
         public static string Col39 {
             get {
@@ -1633,6 +1633,24 @@ namespace BDMdata {
             get {
                 object obj = ResourceManager.GetObject("eyeglasses", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to F_AinData.
+        /// </summary>
+        public static string F_AinType {
+            get {
+                return ResourceManager.GetString("F_AinType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to F_DinData.
+        /// </summary>
+        public static string F_DinType {
+            get {
+                return ResourceManager.GetString("F_DinType", resourceCulture);
             }
         }
         
@@ -3078,6 +3096,15 @@ namespace BDMdata {
             get {
                 object obj = ResourceManager.GetObject("picture_2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PIDStepCtrlData.
+        /// </summary>
+        public static string PIDStepType {
+            get {
+                return ResourceManager.GetString("PIDStepType", resourceCulture);
             }
         }
         

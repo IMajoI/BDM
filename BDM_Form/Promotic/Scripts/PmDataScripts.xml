@@ -11,11 +11,193 @@ Alarms.RegisterNew pMe.Name & "_AlarmL" , "IO", pMe.Name, "Alarm L"
 Alarms.RegisterNew pMe.Name & "_AlarmLL" , "IO", pMe.Name, "Alarm LL"
 
 Alarms.RegisterNew pMe.Name & "_HWSigFault" , "IO", pMe.Name, "HW Signal Fault"
+
+'Load inhibits
+Dim fName
+Dim sectionName
+
+fName = "#cfg:AinData.ini"
+sectionName = pMe.Name
+
+pMe.Item("AlarmLInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmLInhibit").Name, "false", vbBoolean)
+pMe.Item("AlarmLLInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmLLInhibit").Name, "false", vbBoolean)
+pMe.Item("AlarmHInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmHInhibit").Name, "false", vbBoolean)
+pMe.Item("AlarmHHInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmHHInhibit").Name, "false", vbBoolean)
+pMe.Item("HWSigFaultInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HWSigFaultInhibit").Name, "false", vbBoolean)
+
 ]]>
 </AinDataOnStartEvent>
+  
+<AinDataOnStopEvent>
+<![CDATA[
+'save on stop
+Dim fName
+Dim sectionName
 
+fName = "#cfg:AinData.ini"
+sectionName = pMe.Name
+
+Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmLInhibit").Name, pMe.Item("AlarmLInhibit").Value
+Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmLLInhibit").Name, pMe.Item("AlarmLLInhibit").Value
+Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmHInhibit").Name, pMe.Item("AlarmHInhibit").Value
+Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmHHInhibit").Name, pMe.Item("AlarmHHInhibit").Value
+Pm.IniFileWrite fName, sectionName, pMe.Item("HWSigFaultInhibit").Name, pMe.Item("HWSigFaultInhibit").Value
+
+]]>
+</AinDataOnStopEvent>
+<PIDStepCtrlDataOnItemAfterWriteEvent>
+<![CDATA[
+'********************************************************************************
+'WORD <-> BITS
+'********************************************************************************
+
+select case pEvent.Item.Name
+  'W1
+  case "W1" 
+    pMe.Item("OUT_Seq").Value = Pm.GetBit(pMe.Item("W1").Value, 8)
+    pMe.Item("OUT_Cen").Value = Pm.GetBit(pMe.Item("W1").Value, 9)
+    pMe.Item("OUT_E1").Value = Pm.GetBit(pMe.Item("W1").Value, 10)
+    pMe.Item("OUT_E2").Value = Pm.GetBit(pMe.Item("W1").Value, 11)
+    pMe.Item("OUT_Track").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
+    pMe.Item("OUT_Auto").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
+    pMe.Item("OUT_Man").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
+    'rez 15
+    pMe.Item("HMI_ManSel").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
+    pMe.Item("HMI_E1Sel").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
+    pMe.Item("HMI_E2Sel").Value = Pm.GetBit(pMe.Item("W1").Value, 2)
+    pMe.Item("HMI_Track").Value = Pm.GetBit(pMe.Item("W1").Value, 3)
+    pMe.Item("HMI_CenSel").Value = Pm.GetBit(pMe.Item("W1").Value, 4)
+    pMe.Item("HMI_AutoSel").Value = Pm.GetBit(pMe.Item("W1").Value, 5)
+    pMe.Item("HMI_Sim").Value = Pm.GetBit(pMe.Item("W1").Value, 6)
+    pMe.Item("HMI_Dir").Value = Pm.GetBit(pMe.Item("W1").Value, 7)
+  case "OUT_Seq"
+    pMe.Item("W1").Bit(8) = pEvent.Item.Value
+  case "OUT_Cen"
+    pMe.Item("W1").Bit(9) = pEvent.Item.Value
+  case "OUT_E1"
+    pMe.Item("W1").Bit(10) = pEvent.Item.Value
+  case "OUT_E2"
+    pMe.Item("W1").Bit(11) = pEvent.Item.Value
+  case "OUT_Track"
+    pMe.Item("W1").Bit(12) = pEvent.Item.Value
+  case "OUT_Auto"
+    pMe.Item("W1").Bit(13) = pEvent.Item.Value
+  case "OUT_Man"
+    pMe.Item("W1").Bit(14) = pEvent.Item.Value
+  case "HMI_ManSel"
+    pMe.Item("W1").Bit(0) = pEvent.Item.Value
+  case "HMI_E1Sel"
+    pMe.Item("W1").Bit(1) = pEvent.Item.Value
+  case "HMI_E2Sel"
+    pMe.Item("W1").Bit(2) = pEvent.Item.Value
+  case "HMI_Track"
+    pMe.Item("W1").Bit(3) = pEvent.Item.Value
+  case "HMI_CenSel"
+    pMe.Item("W1").Bit(4) = pEvent.Item.Value
+  case "HMI_AutoSel"
+    pMe.Item("W1").Bit(5) = pEvent.Item.Value
+  case "HMI_Sim"
+    pMe.Item("W1").Bit(6) = pEvent.Item.Value
+  case "HMI_Dir"
+    pMe.Item("W1").Bit(7) = pEvent.Item.Value
+  'W2
+  case "W2" 
+    pMe.Item("HMI_Apply").Value = Pm.GetBit(pMe.Item("W2").Value, 8)
+    pMe.Item("OUT_QLMNUP").Value = Pm.GetBit(pMe.Item("W2").Value, 1)
+    pMe.Item("OUT_QLMNDN").Value = Pm.GetBit(pMe.Item("W2").Value, 2)
+    pMe.Item("HMI_ValveOpen").Value = Pm.GetBit(pMe.Item("W2").Value, 3)
+    pMe.Item("HMI_ValveClose").Value = Pm.GetBit(pMe.Item("W2").Value, 4)
+  case "HMI_Apply"
+    pMe.Item("W2").Bit(8) = pEvent.Item.Value
+  case "OUT_QLMNUP"
+    pMe.Item("W2").Bit(1) = pEvent.Item.Value
+  case "OUT_QLMNDN"
+    pMe.Item("W2").Bit(2) = pEvent.Item.Value
+  case "HMI_ValveOpen"
+    pMe.Item("W2").Bit(3) = pEvent.Item.Value
+  case "HMI_ValveClose"
+    pMe.Item("W2").Bit(4) = pEvent.Item.Value
+end select
+
+'********************************************************************************
+'TREND MANAGEMENT
+'********************************************************************************
+
+'Min
+if pEvent.Item.Name = "Min" then
+    pMe.Item("ActSP").Extension("trend").Min = pMe.Item("Min").Value
+    pMe.Item("ActPV").Extension("trend").Min = pMe.Item("Min").Value
+end if
+
+'Max
+if pEvent.Item.Name = "Max" then
+    pMe.Item("ActSP").Extension("trend").Max = pMe.Item("Max").Value
+    pMe.Item("ActPV").Extension("trend").Max = pMe.Item("Max").Value
+end if
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:PIDStepCtrlData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Dir").Name, pMe.Item("HMI_Dir").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_MTR").Name, pMe.Item("HMI_MTR").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Break").Name, pMe.Item("HMI_Break").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Pulse").Name, pMe.Item("HMI_Pulse").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Ti").Name, pMe.Item("HMI_Ti").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Td").Name, pMe.Item("HMI_Td").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_DB").Name, pMe.Item("HMI_DB").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Gain").Name, pMe.Item("HMI_Gain").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("HMI_Dir").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Dir").Name, "0", vbBoolean)
+    pMe.Item("HMI_PIDType").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_PIDType").Name, "0", vbInteger)
+    pMe.Item("HMI_MTR").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_MTR").Name, "0", vbDouble)
+    pMe.Item("HMI_Break").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Break").Name, "0", vbDouble)
+    pMe.Item("HMI_Pulse").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Pulse").Name, "0", vbDouble)
+    pMe.Item("HMI_Ti").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Ti").Name, "0", vbDouble)
+    pMe.Item("HMI_Td").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Td").Name, "0", vbDouble)
+    pMe.Item("HMI_DB").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_DB").Name, "0", vbDouble)
+    pMe.Item("HMI_Gain").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Gain").Name, "0", vbDouble)
+    
+end if
+
+'********************************************************************************
+'Check whether ValueIn is within Min/Max limits
+'********************************************************************************
+
+if pEvent.Item.Name = "ActSP" then
+    if pMe.Item("ActSP").Value > pMe.Item("Max").Value then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("ActSP").Value = pMe.Item("Max").Value
+    elseif pMe.Item("ActSP").Value < pMe.Item("Min").Value then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("ActSP").Value = pMe.Item("Min").Value 
+    end if
+end if
+
+]]>
+</PIDStepCtrlDataOnItemAfterWriteEvent>
 <AinDataOnItemAfterWriteEvent>
 <![CDATA[
+
+
 
 '********************************************************************************
 'WORD <-> BITS
@@ -30,8 +212,8 @@ select case pEvent.Item.Name
     pMe.Item("AlarmLL").Value = Pm.GetBit(pEvent.Item.Value, 11)
     pMe.Item("HWSigFault").Value = Pm.GetBit(pEvent.Item.Value, 12)
     pMe.Item("Force").Value = Pm.GetBit(pEvent.Item.Value, 13)
-    pMe.Item("AlarmLInhibit").Value = Pm.GetBit(pEvent.Item.Value, 0)
-    pMe.Item("AlarmLLInhibit").Value = Pm.GetBit(pEvent.Item.Value, 1)
+    'pMe.Item("AlarmLInhibit").Value = Pm.GetBit(pEvent.Item.Value, 0)
+    'pMe.Item("AlarmLLInhibit").Value = Pm.GetBit(pEvent.Item.Value, 1)
     pMe.Item("HH_ALEn").Value = Pm.GetBit(pEvent.Item.Value, 2)
     pMe.Item("H_ALEn").Value = Pm.GetBit(pEvent.Item.Value, 3)
     pMe.Item("L_ALEn").Value = Pm.GetBit(pEvent.Item.Value, 4)
@@ -50,10 +232,6 @@ select case pEvent.Item.Name
     pMe.Item("W1").Bit(12) = pEvent.Item.Value
   case "Force"
     pMe.Item("W1").Bit(13) = pEvent.Item.Value
-  case "AlarmLInhibit"
-    pMe.Item("W1").Bit(0) = pEvent.Item.Value
-  case "AlarmLLInhibit"
-    pMe.Item("W1").Bit(1) = pEvent.Item.Value
   case "HH_ALEn"
     pMe.Item("W1").Bit(2) = pEvent.Item.Value
   case "H_ALEn"
@@ -75,8 +253,6 @@ select case pEvent.Item.Name
     pMe.Item("H_ALAck").Value = Pm.GetBit(pEvent.Item.Value, 11)
     pMe.Item("L_ALAck").Value = Pm.GetBit(pEvent.Item.Value, 12)
     pMe.Item("LL_ALAck").Value = Pm.GetBit(pEvent.Item.Value, 13)
-    pMe.Item("AlarmHHInhibit").Value = Pm.GetBit(pEvent.Item.Value, 2)
-    pMe.Item("AlarmHInhibit").Value = Pm.GetBit(pEvent.Item.Value, 3)
   case "L_En"
     pMe.Item("W2").Bit(8) = pEvent.Item.Value
   case "LL_En"
@@ -89,10 +265,6 @@ select case pEvent.Item.Name
     pMe.Item("W2").Bit(12) = pEvent.Item.Value
   case "LL_ALAck"
     pMe.Item("W2").Bit(13) = pEvent.Item.Value
-  case "AlarmHHInhibit"
-    pMe.Item("W2").Bit(2) = pEvent.Item.Value
-  case "AlarmHInhibit"
-    pMe.Item("W2").Bit(3) = pEvent.Item.Value
 end select
 
 '********************************************************************************
@@ -100,9 +272,9 @@ end select
 '********************************************************************************
 
 'AlarmHH
-if pEvent.Item.Name = "AlarmHH" and pMe.Item("HH_ALEn") then
+if (pEvent.Item.Name = "AlarmHH" or pEvent.Item.Name = "AlarmHHInhibit") and pMe.Item("HH_ALEn") then
     'Activate alarm
-    if pMe.Item("AlarmHH") then
+    if pMe.Item("AlarmHH") and not pMe.Item("AlarmHHInhibit").Value then
         Alarms.Item(pMe.Name & "_AlarmHH").Activate
         pMe.Item("HH_ALAck").Value = true
         Events.ActivateNew pMe.Name & "_AlarmHH" , "event0", pMe.Name, "Alarm HH"
@@ -117,10 +289,15 @@ if pEvent.Item.Name = "HH_ALAck" and not pMe.Item("HH_ALAck") then
     Alarms.Item(pMe.Name & "_AlarmHH").Acknowledge
 end if
 
+if pEvent.Item.Name = "AlarmHHInhibit" and pMe.Item("AlarmHHInhibit").Value then
+  Alarms.Item(pMe.Name & "_AlarmHH").Inactivate
+  Alarms.Item(pMe.Name & "_AlarmHH").Acknowledge
+end if
+
 'AlarmH
-if pEvent.Item.Name = "AlarmH" and pMe.Item("H_ALEn").Value then
+if (pEvent.Item.Name = "AlarmH" or pEvent.Item.Name = "AlarmHInhibit") and pMe.Item("H_ALEn").Value then
     'Activate alarm
-    if pMe.Item("AlarmH") then
+    if pMe.Item("AlarmH") and not pMe.Item("AlarmHInhibit").Value then
         Alarms.Item(pMe.Name & "_AlarmH").Activate
         pMe.Item("H_ALAck").Value = true
         Events.ActivateNew pMe.Name & "_AlarmH" , "event0", pMe.Name, "Alarm H"
@@ -135,10 +312,15 @@ if pEvent.Item.Name = "H_ALAck" and not pMe.Item("H_ALAck") then
   Alarms.Item(pMe.Name & "_AlarmH").Acknowledge
 end if
 
+if pEvent.Item.Name = "AlarmHInhibit" and pMe.Item("AlarmHInhibit").Value then
+  Alarms.Item(pMe.Name & "_AlarmH").Inactivate
+  Alarms.Item(pMe.Name & "_AlarmH").Acknowledge
+end if
+
 'AlarmL
-if pEvent.Item.Name = "AlarmL" and pMe.Item("L_ALEn").Value then
+if (pEvent.Item.Name = "AlarmL" or pEvent.Item.Name = "AlarmLInhibit") and pMe.Item("L_ALEn").Value then
     'Activate alarm
-    if pMe.Item("AlarmL") then
+    if pMe.Item("AlarmL") and not pMe.Item("AlarmLInhibit").Value then
         Alarms.Item(pMe.Name & "_AlarmL").Activate
         pMe.Item("L_ALAck").Value = true
         Events.ActivateNew pMe.Name & "_AlarmL" , "event0", pMe.Name, "Alarm L"
@@ -153,10 +335,15 @@ if pEvent.Item.Name = "L_ALAck" and not pMe.Item("L_ALAck") then
     Alarms.Item(pMe.Name & "_AlarmL").Acknowledge
 end if
 
+if pEvent.Item.Name = "AlarmLInhibit" and pMe.Item("AlarmLInhibit").Value then
+  Alarms.Item(pMe.Name & "_AlarmL").Inactivate
+  Alarms.Item(pMe.Name & "_AlarmL").Acknowledge
+end if
+
 'AlarmLL
-if pEvent.Item.Name = "AlarmLL" and pMe.Item("LL_ALEn").Value then
+if (pEvent.Item.Name = "AlarmLL" or pEvent.Item.Name = "AlarmLLInhibit") and pMe.Item("LL_ALEn").Value then
     'Activate alarm
-    if pMe.Item("AlarmLL") then
+    if pMe.Item("AlarmLL") and not pMe.Item("AlarmLLInhibit").Value then
         Alarms.Item(pMe.Name & "_AlarmLL").Activate
         pMe.Item("LL_ALAck").Value = true
         Events.ActivateNew pMe.Name & "_AlarmLL" , "event0", pMe.Name, "Alarm LL"
@@ -171,10 +358,15 @@ if pEvent.Item.Name = "LL_ALAck" and not pMe.Item("LL_ALAck") then
     Alarms.Item(pMe.Name & "_AlarmLL").Acknowledge
 end if
 
+if pEvent.Item.Name = "AlarmLLInhibit" and pMe.Item("AlarmLLInhibit").Value then
+  Alarms.Item(pMe.Name & "_AlarmLL").Inactivate
+  Alarms.Item(pMe.Name & "_AlarmLL").Acknowledge
+end if
+
 'HWSigFault
-if pEvent.Item.Name = "HWSigFault" then
+if pEvent.Item.Name = "HWSigFault" or pEvent.Item.Name = "HWSigFaultInhibit" then
     'Activate alarm
-    if pMe.Item("HWSigFault") then
+    if pMe.Item("HWSigFault") and not pMe.Item("HWSigFaultInhibit").Value then
         Alarms.Item(pMe.Name & "_HWSigFault").Activate
         pMe.Item("HWSigFault_ALAck").Value = true
         Events.ActivateNew pMe.Name & "_HWSigFault" , "event0", pMe.Name, "HWSigFault"
@@ -189,7 +381,12 @@ if pEvent.Item.Name = "HWSigFault_ALAck" and not pMe.Item("HWSigFault_ALAck") th
     Alarms.Item(pMe.Name & "_HWSigFault").Acknowledge
 end if
 
-pMe.Item("AnyAl").Value = pMe.Item("AlarmHH") and pMe.Item("HH_ALEn") or pMe.Item("AlarmH") and pMe.Item("H_ALEn") or pMe.Item("AlarmL") and pMe.Item("L_ALEn") or pMe.Item("AlarmLL") and pMe.Item("LL_ALEn") or pMe.Item("HWSigFault")
+if pEvent.Item.Name = "HWSigFaultInhibit" and pMe.Item("HWSigFaultInhibit").Value then
+  Alarms.Item(pMe.Name & "_HWSigFault").Inactivate
+  Alarms.Item(pMe.Name & "_HWSigFault").Acknowledge
+end if
+
+pMe.Item("AnyAl").Value = pMe.Item("AlarmHH") and pMe.Item("HH_ALEn") and not pMe.Item("AlarmHHInhibit") or pMe.Item("AlarmH") and pMe.Item("H_ALEn") and not pMe.Item("AlarmHInhibit") or pMe.Item("AlarmL") and pMe.Item("L_ALEn") and not pMe.Item("AlarmLInhibit") or pMe.Item("AlarmLL") and pMe.Item("LL_ALEn") and not pMe.Item("AlarmLLInhibit") or pMe.Item("HWSigFault") and not pMe.Item("HWSigFaultInhibit")
 pMe.Item("AnyAck").Value = pMe.Item("HH_ALAck") or pMe.Item("H_ALAck") or pMe.Item("L_ALAck") or pMe.Item("LL_ALAck") or pMe.Item("HWSigFault_ALAck")
 pMe.Item("AnyInh").Value = pMe.Item("AlarmHHInhibit") or pMe.Item("AlarmHInhibit") or pMe.Item("AlarmLInhibit") or pMe.Item("AlarmLLInhibit")
 
@@ -231,6 +428,55 @@ if pEvent.Item.Name = "AlarmL" and pMe.Item("AlarmL") and pMe.Item("L_En") then
     Events.ActivateNew pMe.Name & "_AlarmL" , "event0", pMe.Name, "Alarm L"
 end if
 
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:AinData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmDelay").Name, pMe.Item("AlarmDelay").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AELevelHH").Name, pMe.Item("AELevelHH").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AELevelH").Name, pMe.Item("AELevelH").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AELevelL").Name, pMe.Item("AELevelL").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AELevelLL").Name, pMe.Item("AELevelLL").Value
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmLInhibit").Name, pMe.Item("AlarmLInhibit").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmLLInhibit").Name, pMe.Item("AlarmLLInhibit").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmHInhibit").Name, pMe.Item("AlarmHInhibit").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmHHInhibit").Name, pMe.Item("AlarmHHInhibit").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HWSigFaultInhibit").Name, pMe.Item("HWSigFaultInhibit").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("AlarmDelay").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmDelay").Name, "0", vbInteger)
+    pMe.Item("AELevelHH").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AELevelHH").Name, "0.0", vbDouble)
+    pMe.Item("AELevelH").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AELevelH").Name, "0.0", vbDouble)
+    pMe.Item("AELevelL").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AELevelL").Name, "0.0", vbDouble)
+    pMe.Item("AELevelLL").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AELevelLL").Name, "0.0", vbDouble)
+    
+    pMe.Item("AlarmLInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmLInhibit").Name, "false", vbBoolean)
+    pMe.Item("AlarmLLInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmLLInhibit").Name, "false", vbBoolean)
+    pMe.Item("AlarmHInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmHInhibit").Name, "false", vbBoolean)
+    pMe.Item("AlarmHHInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmHHInhibit").Name, "false", vbBoolean)
+    pMe.Item("HWSigFaultInhibit").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HWSigFaultInhibit").Name, "false", vbBoolean)
+
+end if
+
+
 ]]>
 </AinDataOnItemAfterWriteEvent>
   
@@ -262,6 +508,32 @@ select case pEvent.Item.Name
   case "HMI_PreselEn"
     pMe.Item("W1").Bit(14) = pEvent.Item.Value
 end select
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:PreselData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    
+end if
 ]]>
 </PreselDataOnItemAfterWriteEvent>
 
@@ -288,6 +560,18 @@ $.join($.expr("pDE.Var.Owner.Name"),".Value")
 $.join($.expr("pDE.Var.Owner.Name"),".ActSP")
 ]]>
 </TrendExtNameActSP>
+  
+  <TrendExtNameQLMNUP>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".QLMNUP")
+]]>
+</TrendExtNameQLMNUP>
+  
+  <TrendExtNameQLMNDN>
+<![CDATA[
+$.join($.expr("pDE.Var.Owner.Name"),".QLMNDN")
+]]>
+</TrendExtNameQLMNDN>
 
 <TrendExtNameActPV>
 <![CDATA[
@@ -327,6 +611,7 @@ $.join($.expr("pDE.Var.Owner.Name"),".HMI_SV")
 
 <DinDataOnItemAfterWriteEvent>
 <![CDATA[
+
 '********************************************************************************
 'WORD <-> BITS
 '********************************************************************************
@@ -339,7 +624,6 @@ select case pEvent.Item.Name
     pMe.Item("NormalState").Value = Pm.GetBit(pMe.Item("W1").Value, 12)
     pMe.Item("Value").Value = Pm.GetBit(pMe.Item("W1").Value, 13)
     pMe.Item("HWSig").Value = Pm.GetBit(pMe.Item("W1").Value, 14)
-    pMe.Item("AlarmInhibit").Value = Pm.GetBit(pMe.Item("W1").Value, 15)
     pMe.Item("ALAck").Value = Pm.GetBit(pMe.Item("W1").Value, 0)
     pMe.Item("Sig_ALEn").Value = Pm.GetBit(pMe.Item("W1").Value, 1)
   case "Alarm"
@@ -352,8 +636,6 @@ select case pEvent.Item.Name
     pMe.Item("W1").Bit(13) = pEvent.Item.Value
   case "HWSig"
     pMe.Item("W1").Bit(14) = pEvent.Item.Value
-  case "AlarmInhibit"
-    pMe.Item("W1").Bit(15) = pEvent.Item.Value
   case "ALAck"
     pMe.Item("W1").Bit(0) = pEvent.Item.Value
   case "Sig_ALEn"
@@ -365,7 +647,7 @@ end select
 '********************************************************************************
 
 'Value
-if pEvent.Item.Name = "Alarm" and pMe.Item("Sig_ALEn") then
+if (pEvent.Item.Name = "Alarm" or pEvent.Item.Name = "AlarmInhibit") and pMe.Item("Sig_ALEn") then
     'Activate alarm
     if pMe.Item("Alarm") then
         Alarms.Item(pMe.Name & "_Alarm").Activate
@@ -382,8 +664,46 @@ if pEvent.Item.Name = "ALAck" and not pMe.Item("ALAck") then
     Alarms.Item(pMe.Name & "_Alarm").Acknowledge
 end if
 
+if pEvent.Item.Name = "AlarmInhibit" and pMe.Item("AlarmInhibit").Value then
+  Alarms.Item(pMe.Name & "_Alarm").Inactivate
+  Alarms.Item(pMe.Name & "_Alarm").Acknowledge
+end if
+
+
 pMe.Item("AnyAl").Value = pMe.Item("Alarm") and pMe.Item("Sig_ALEn")
 pMe.Item("AnyAck").Value = pMe.Item("ALAck")
+
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:DinData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("AlarmDelay").Name, pMe.Item("AlarmDelay").Value
+
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("AlarmDelay").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("AlarmDelay").Name, "0", vbInteger)
+
+end if
+
+
 
 ]]>
 </DinDataOnItemAfterWriteEvent>
@@ -565,6 +885,58 @@ end if
 
 pMe.Item("AnyAl").Value = pMe.Item("FBFault") or pMe.Item("PosError") or pMe.Item("HWSigFault_FB")
 pMe.Item("AnyAck").Value = pMe.Item("FBFault_ALAck") or pMe.Item("PosError_ALAck") or pMe.Item("HWSigFault_FB_ALAck")
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:AnalogPosCtrlData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("ConPuAct").Name, pMe.Item("ConPuAct").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_DevDelay").Name, pMe.Item("HMI_DevDelay").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("PF").Name, pMe.Item("PF").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_DevDB").Name, pMe.Item("HMI_DevDB").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("ConPuK").Name, pMe.Item("ConPuK").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("ACTT").Name, pMe.Item("ACTT").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("ConPuAct").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("ConPuAct").Name, "0", vbBoolean)
+    pMe.Item("HMI_DevDelay").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_DevDelay").Name, "0.0", vbInteger)
+    pMe.Item("PF").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("PF").Name, "0.0", vbInteger)
+    pMe.Item("HMI_DevDB").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_DevDB").Name, "0.0", vbDouble)
+    pMe.Item("ConPuK").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("ConPuK").Name, "0.0", vbDouble)
+    pMe.Item("ACTT").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("ACTT").Name, "0.0", vbDouble)
+
+end if
+
+'********************************************************************************
+'Check whether ValueIn is within Min/Max limits
+'********************************************************************************
+
+if pEvent.Item.Name = "CmdValue" then
+    if pMe.Item("CmdValue").Value > 100 then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("CmdValue").Value = 100
+    elseif pMe.Item("CmdValue").Value < 0 then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("CmdValue").Value = 0 
+    end if
+end if
 ]]>
 </AnalogPosCtrlDataOnItemAfterWriteEvent>
 
@@ -638,6 +1010,46 @@ end if
 'Max
 if pEvent.Item.Name = "Max" then
     pMe.Item("ValueOut").Extension("trend").Max = pMe.Item("Max").Value
+end if
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:AoutData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+
+end if
+
+'********************************************************************************
+'Check whether ValueIn is within Min/Max limits
+'********************************************************************************
+
+if pEvent.Item.Name = "HMI_Value" then
+    if pMe.Item("HMI_Value").Value > pMe.Item("Max").Value then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("HMI_Value").Value = pMe.Item("Max").Value
+    elseif pMe.Item("HMI_Value").Value < pMe.Item("Min").Value then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("HMI_Value").Value = pMe.Item("Min").Value 
+    end if
 end if
 ]]>
 </AoutDataOnItemAfterWriteEvent>
@@ -729,6 +1141,33 @@ select case pEvent.Item.Name
     pMe.Item("W2").Bit(2) = pEvent.Item.Value
 
 end select
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:GrpData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+
+end if
 ]]>
 </GrpCtrlDataOnItemAfterWriteEvent>  
 <DoutDataOnItemAfterWriteEvent>
@@ -756,6 +1195,35 @@ select case pEvent.Item.Name
   case "SetManual"
     pMe.Item("W1").Bit(14) = pEvent.Item.Value
 end select
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:DoutData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("PulseTime").Name, pMe.Item("PulseTime").Value
+
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("PulseTime").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("PulseTime").Name, "0", vbInteger)
+
+end if
 ]]>
 </DoutDataOnItemAfterWriteEvent>
 <OnOffCtrlDataOnItemAfterWriteEvent>
@@ -937,6 +1405,34 @@ end if
 
 pMe.Item("AnyAl").Value = pMe.Item("FBFault")
 pMe.Item("AnyAck").Value = pMe.Item("ALAck")
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:OnOffCtrlData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("FBTime").Name, pMe.Item("FBTime").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("FBTime").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("FBTime").Name, "0", vbInteger)
+    
+end if
 ]]>
 </OnOffCtrlDataOnItemAfterWriteEvent>
 
@@ -1008,7 +1504,7 @@ select case pEvent.Item.Name
     
     
     
-  'W2           'ZDE JSEM SKONCIL                                                                             'ZDE JSEM SKONCIL  
+  'W2           
   case "W2" 
     pMe.Item("PDCCW").Value = Pm.GetBit(pMe.Item("W2").Value, 8)
     pMe.Item("ME").Value = Pm.GetBit(pMe.Item("W2").Value, 9)
@@ -1283,6 +1779,48 @@ end if
 
 pMe.Item("AnyAl").Value = pMe.Item("FBFaultCW") or pMe.Item("FBFaultCCW") or pMe.Item("DriveFault")
 pMe.Item("AnyAck").Value = pMe.Item("ALAck")
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:OnOffCtrlData_VSD.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("FBTime").Name, pMe.Item("FBTime").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("FBTime").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("FBTime").Name, "0", vbInteger)
+    
+end if
+
+'********************************************************************************
+'Check whether ValueIn is within Min/Max limits
+'********************************************************************************
+
+if pEvent.Item.Name = "HMI_SV" then
+    if pMe.Item("HMI_SV").Value > 100 then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("HMI_SV").Value = 100
+    elseif pMe.Item("HMI_SV").Value < 0 then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("HMI_SV").Value = 0 
+    end if
+end if
 ]]>
 </OnOffCtrlDataVSDOnItemAfterWriteEvent>
 
@@ -1567,6 +2105,34 @@ end if
 
 pMe.Item("AnyAl").Value = pMe.Item("FBFaultCW") or pMe.Item("FBFaultCCW") or pMe.Item("FBFaultStop")
 pMe.Item("AnyAck").Value = pMe.Item("ALAck")
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:OnOffCtrlData_2D.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("FBTime").Name, pMe.Item("FBTime").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("FBTime").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("FBTime").Name, "0", vbInteger)
+    
+end if
 ]]>
 </OnOffCtrlData2DOnItemAfterWriteEvent>
 
@@ -1655,6 +2221,76 @@ end if
 'HMI Max
 if pEvent.Item.Name = "HMI_PIDOutMax" then
     pMe.Item("ValueOut").Extension("trend").Max = pMe.Item("HMI_PIDOutMax").Value
+end if
+
+'********************************************************************************
+'SAVE VALUES TO CONFIG FILE
+'********************************************************************************
+
+Dim fName
+Dim sectionName
+
+fName = "#cfg:PIDCtrlData.ini"
+sectionName = pMe.Name
+
+'Save all config values
+if pEvent.Item.Name = "Save" and pEvent.Item.Value then
+    pMe.Item("Save").Value = false
+    
+    Pm.IniFileWrite fName, sectionName, pMe.Item("Note").Name, pMe.Item("Note").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Dir").Name, pMe.Item("HMI_Dir").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_PIDType").Name, pMe.Item("HMI_PIDType").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_PIDOutMax").Name, pMe.Item("HMI_PIDOutMax").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_PIDOutMin").Name, pMe.Item("HMI_PIDOutMin").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Ti").Name, pMe.Item("HMI_Ti").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Td").Name, pMe.Item("HMI_Td").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_DB").Name, pMe.Item("HMI_DB").Value
+    Pm.IniFileWrite fName, sectionName, pMe.Item("HMI_Gain").Name, pMe.Item("HMI_Gain").Value
+    
+end if
+
+'Load all config values
+if pEvent.Item.Name = "Load" and pEvent.Item.Value then
+    pMe.Item("Load").Value = false
+    
+    pMe.Item("Note").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("Note").Name, "0", vbString)
+    pMe.Item("HMI_Dir").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Dir").Name, "0", vbBoolean)
+    pMe.Item("HMI_PIDType").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_PIDType").Name, "0", vbInteger)
+    pMe.Item("HMI_PIDOutMax").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_PIDOutMax").Name, "0", vbDouble)
+    pMe.Item("HMI_PIDOutMin").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_PIDOutMin").Name, "0", vbDouble)
+    pMe.Item("HMI_Ti").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Ti").Name, "0", vbDouble)
+    pMe.Item("HMI_Td").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Td").Name, "0", vbDouble)
+    pMe.Item("HMI_DB").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_DB").Name, "0", vbDouble)
+    pMe.Item("HMI_Gain").Value = Pm.IniFileRead(fName, sectionName, pMe.Item("HMI_Gain").Name, "0", vbDouble)
+    
+end if
+
+'********************************************************************************
+'Check whether Valueout is within Min/Max limits
+'********************************************************************************
+
+if pEvent.Item.Name = "ValueOut" then
+    if pMe.Item("ValueOut").Value > 100 then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("ValueOut").Value = 100
+    elseif pMe.Item("ValueOut").Value < 0 then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("ValueOut").Value = 0 
+    end if
+end if
+
+'********************************************************************************
+'Check whether act sp is within Min/Max limits
+'********************************************************************************
+
+if pEvent.Item.Name = "ActSP" then
+    if pMe.Item("ActSP").Value > pMe.Item("Max").Value then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("ActSP").Value = pMe.Item("Max").Value
+    elseif pMe.Item("ActSP").Value < pMe.Item("Min").Value then
+        Pm.MessageBox "Chyba", "Hodnota musí být v rozsahu."
+        pMe.Item("ActSP").Value = pMe.Item("Min").Value 
+    end if
 end if
 ]]>
 </PIDCtrlDataOnItemAfterWriteEvent>

@@ -22,7 +22,8 @@
     <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
         <value>[base64 mime encoded serialized .NET Framework object]</value>
     </data>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.byte
+    .base64">
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
@@ -356,7 +357,7 @@
     <value>AE_LL_Cfg</value>
   </data>
   <data name="Col28" xml:space="preserve">
-    <value>Init_L_ Lvl</value>
+    <value>Init_LL_Lvl</value>
   </data>
   <data name="Col29" xml:space="preserve">
     <value>AEHH_severity</value>
@@ -383,7 +384,7 @@
     <value>FB1_CW_suffix</value>
   </data>
   <data name="Col36" xml:space="preserve">
-    <value>FB1CCW_suffix</value>
+    <value>FB1_CCW_suffix</value>
   </data>
   <data name="Col37" xml:space="preserve">
     <value>CMD0_Suffix</value>
@@ -392,7 +393,7 @@
     <value>CMD1_CW_Suffix</value>
   </data>
   <data name="Col39" xml:space="preserve">
-    <value>CMD1CCW_Suffix</value>
+    <value>CMD1_CCW_suffix</value>
   </data>
   <data name="Col4" xml:space="preserve">
     <value>DBNr</value>
@@ -1473,5 +1474,14 @@
   </data>
   <data name="Int" xml:space="preserve">
     <value>int</value>
+  </data>
+  <data name="F_AinType" xml:space="preserve">
+    <value>F_AinData</value>
+  </data>
+  <data name="F_DinType" xml:space="preserve">
+    <value>F_DinData</value>
+  </data>
+  <data name="PIDStepType" xml:space="preserve">
+    <value>PIDStepCtrlData</value>
   </data>
 </root>

@@ -153,7 +153,7 @@ namespace BDM_Form
             [XmlElement]
             public List<EventClass> Event { get; set; }
             [XmlElement]
-            public MethodsClass Methods { get; set; }
+            public List<MethodsClass> Methods { get; set; }
         }
 
         //Events : basic object
